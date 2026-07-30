@@ -604,7 +604,7 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
 .chip-toggles-section__list::-webkit-scrollbar { width: 6px; }
 .chip-toggles-section__list::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
 
-.chip-sort-select { cursor: pointer; }
+.chip-sort-select { cursor: pointer; font-size: 0.55rem; padding: 2px 4px; border-radius: 3px; border: 1px solid #4a5568; background: #1e293b; color: #e2e8f0; margin-left: 2px; }
 .chip-sort-select option { background: #1e293b; color: #e2e8f0; }
 
 .chip-expand-all {
@@ -612,8 +612,17 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
   border: 1px solid var(--border) !important;
   border-radius: 4px; cursor: pointer;
   transition: var(--transition);
+  font-size: 0.6rem; padding: 2px 7px;
 }
 .chip-expand-all:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+
+.chip-filter-bar { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-left: 4px; }
+
+.chip-all { font-size: 0.65rem; padding: 3px 8px; font-weight: 600; }
+
+.chip-ghost-toggle { font-size: 0.55rem; padding: 2px 5px; }
+
+.chip-toggle { font-size: 0.6rem; padding: 2px 5px; }
 
 /* Vendor-grouped chip toggles */
 .chip-vendor-group {
@@ -628,7 +637,7 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
   cursor: pointer; font-size: 0.68rem; font-weight: 600;
   color: var(--text-primary); user-select: none;
   touch-action: manipulation; white-space: nowrap;
-  min-height: 28px; /* >= 36px would be ideal, but 28px matches compact layout */
+  min-height: 28px;
 }
 .chip-vendor-header:hover { background: var(--bg-card-hover); }
 .chip-vendor-name {
@@ -659,6 +668,7 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
   border: 1px solid var(--border) !important;
   border-radius: 4px; cursor: pointer;
   transition: var(--transition);
+  font-size: 0.6rem; padding: 2px 6px;
 }
 .chip-preset:hover { background: var(--bg-card-hover); color: var(--text-primary); }
 .chip-preset.active { background: var(--accent-glow); color: var(--accent); border-color: var(--accent) !important; }
@@ -1019,12 +1029,13 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
   .chip-vendor-header { min-height: 36px; padding: 7px 10px; font-size: 0.72rem; }
   .chip-vendor-name { padding: 3px 5px; }
   .chip-vendor-chips { gap: 3px; padding: 5px 7px; }
-  .chip-toggle { font-size: 0.64rem !important; padding: 5px 8px !important; min-height: 36px; min-width: 36px; }
-  .chip-all { font-size: 0.66rem !important; padding: 5px 10px !important; min-height: 36px; }
-  .chip-ghost-toggle { font-size: 0.6rem !important; padding: 5px 8px !important; min-height: 36px !important; }
-  .chip-sort-select { font-size: 0.6rem !important; padding: 5px 6px !important; min-height: 36px; }
-  .chip-expand-all { font-size: 0.62rem !important; padding: 5px 8px !important; min-height: 36px; }
-  .chip-preset { font-size: 0.62rem !important; padding: 5px 8px !important; min-height: 36px; }
+  /* Larger touch targets — override desktop CSS (no longer fighting inline styles) */
+  .chip-toggle { font-size: 0.64rem; padding: 5px 8px; min-height: 36px; min-width: 36px; }
+  .chip-all { font-size: 0.66rem; padding: 5px 10px; min-height: 36px; }
+  .chip-ghost-toggle { font-size: 0.6rem; padding: 5px 8px; min-height: 36px; }
+  .chip-sort-select { font-size: 0.6rem; padding: 5px 6px; min-height: 36px; }
+  .chip-expand-all { font-size: 0.62rem; padding: 5px 8px; min-height: 36px; }
+  .chip-preset { font-size: 0.62rem; padding: 5px 8px; min-height: 36px; }
   .chip-filter-bar { gap: 4px; }
   .compare-controls__label { font-size: 0.72rem; }
   .news-card { padding: 14px; }
@@ -1120,12 +1131,12 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
     <div class="chip-toggles-section__header">
       <span class="compare-controls__label">🔍 芯片列选择：</span>
       <span class="chip-presets" id="chipPresets">
-        <button class="btn btn-sm chip-preset" data-preset="flagship" style="font-size:0.6rem;padding:2px 6px" title="旗舰标准：当前代际顶级AI加速器（≥H100级别）&#10;涵盖 NVIDIA H100/H200/B200/B300 · AMD MI300X/MI355X · Intel Gaudi 3&#10;华为 Ascend 910C/950PR · Google TPU v6e/v7 · AWS Trainium3&#10;寒武纪 思元590 · 海光 DCU Z100 · 昆仑芯2 · 燧原T20 · 壁仞BR100&#10;摩尔线程 S4000 · 字节 SeedChip · Cerebras CS-3 · Groq LPU&#10;Meta MTIA v2 · OpenAI Jalapeño · Tenstorrent Blackhole&#10;（多选：可与国家/量产组合）">🏆 旗舰</button>
+        <button class="btn btn-sm chip-preset" data-preset="flagship" title="旗舰标准：当前代际顶级AI加速器（≥H100级别）&#10;涵盖 NVIDIA H100/H200/B200/B300 · AMD MI300X/MI355X · Intel Gaudi 3&#10;华为 Ascend 910C/950PR · Google TPU v6e/v7 · AWS Trainium3&#10;寒武纪 思元590 · 海光 DCU Z100 · 昆仑芯2 · 燧原T20 · 壁仞BR100&#10;摩尔线程 S4000 · 字节 SeedChip · Cerebras CS-3 · Groq LPU&#10;Meta MTIA v2 · OpenAI Jalapeño · Tenstorrent Blackhole&#10;（多选：可与国家/量产组合）">🏆 旗舰</button>
 
-        <button class="btn btn-sm chip-preset" data-preset="production" style="font-size:0.6rem;padding:2px 6px" title="仅显示已量产芯片（多选：可与国家组合）">✅ 已量产</button>
+        <button class="btn btn-sm chip-preset" data-preset="production" title="仅显示已量产芯片（多选：可与国家组合）">✅ 已量产</button>
       </span>
       <span style="margin-left:auto;display:inline-flex;gap:3px">
-        <button class="btn btn-sm chip-expand-all" id="btnToggleAllVendors" style="font-size:0.6rem;padding:2px 7px" title="展开/折叠全部厂商">📂 展开全部</button>
+        <button class="btn btn-sm chip-expand-all" id="btnToggleAllVendors" title="展开/折叠全部厂商">📂 展开全部</button>
       </span>
     </div>
     <span id="chipToggles" class="chip-toggles-section__list"></span>
@@ -4068,19 +4079,19 @@ class UIRenderer {
     // "全部" toggle button
     var chipAllOn = UIRenderer._areAllEligibleChipsVisible();
     html += '<button class="btn btn-sm chip-toggle chip-all' + (chipAllOn ? ' active' : '') +
-      '" data-chip="__all__" style="font-size:0.65rem;padding:3px 8px;font-weight:600" ' +
+      '" data-chip="__all__" ' +
       'title="' + (chipAllOn ? '全部芯片已选 · 点击清空' : '仅部分芯片 · 点击全选') + '">全部</button>';
 
     // ── Ghost toggle + Sort selector ──
-    html += '<span class="chip-filter-bar" style="display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;margin-left:4px">';
+    html += '<span class="chip-filter-bar">';
     // Ghost chip toggle
     var hideSparse = App.state.hideSparseChips;
     html += '<button class="btn btn-sm chip-ghost-toggle' + (hideSparse ? ' active' : '') +
-      '" data-action="toggle-ghost" style="font-size:0.55rem;padding:2px 5px;' + (hideSparse ? '' : 'opacity:0.5') +
+      '" data-action="toggle-ghost" style="' + (hideSparse ? '' : 'opacity:0.5;') +
       '" title="隐藏/显示数据不足25%的芯片">' + (hideSparse ? '👻 隐藏稀疏' : '👻 显示全部') + '</button>';
     // Sort selector
     var sortSpec = App.state.sortSpec;
-    html += '<select class="chip-sort-select" data-action="sort-spec" style="font-size:0.55rem;padding:2px 4px;border-radius:3px;border:1px solid #4a5568;background:#1e293b;color:#e2e8f0;margin-left:2px">' +
+    html += '<select class="chip-sort-select" data-action="sort-spec">' +
       '<option value=""' + (sortSpec == null ? ' selected' : '') + '>📊 默认排序</option>' +
       '<option value="fp16"' + (sortSpec === 'fp16' ? ' selected' : '') + '>🔥 FP16↓</option>' +
       '<option value="fp8"' + (sortSpec === 'fp8' ? ' selected' : '') + '>⚡ FP8↓</option>' +
@@ -4184,7 +4195,7 @@ class UIRenderer {
         var isOn = UIRenderer._isChipVisible(chip.id);
         var isCustom = !!customIds[chip.id];
         html += '<button class="btn btn-sm chip-toggle' + (isOn ? ' active' : '') +
-          '" data-chip="' + chip.id + '" style="font-size:0.6rem;padding:2px 5px;border-left:2px solid ' + chip.color + '">' +
+          '" data-chip="' + chip.id + '" style="border-left:2px solid ' + chip.color + '">' +
           chip.name;
         if (isCustom) {
           html += '<span class="chip-remove" data-chip="' + chip.id + '" title="删除此芯片" ' +
