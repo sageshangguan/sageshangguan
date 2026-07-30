@@ -1193,6 +1193,108 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
   .chip-picker-trigger { display: block; }
   .chip-toggles-section__header { align-items: flex-start; }
 }
+
+/* ── Mobile Spec Picker — bottom sheet overlay (two-level) ── */
+.spec-picker-overlay {
+  position: fixed; inset: 0; z-index: 501;
+  background: rgba(0,0,0,0.55);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  display: flex; align-items: flex-end;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s;
+}
+.spec-picker-overlay.open { opacity: 1; pointer-events: auto; }
+.spec-picker-sheet {
+  width: 100%; max-height: 82vh;
+  background: var(--bg-card);
+  border-radius: 18px 18px 0 0;
+  display: flex; flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  overflow: hidden;
+}
+.spec-picker-overlay.open .spec-picker-sheet { transform: translateY(0); }
+.spec-picker-handle {
+  width: 36px; height: 4px; background: var(--border-light);
+  border-radius: 2px; margin: 10px auto 6px; flex-shrink: 0;
+}
+.spec-picker-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 4px 16px 8px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.spec-picker-title { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); }
+.spec-picker-done {
+  font-size: 0.82rem; font-weight: 600; color: var(--accent);
+  background: none; border: none; padding: 6px 10px; cursor: pointer;
+  touch-action: manipulation; min-height: 36px;
+}
+.spec-picker-presets {
+  display: flex; gap: 6px; padding: 8px 16px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0; flex-wrap: wrap;
+}
+.spec-picker-presets button { font-size: 0.75rem; padding: 6px 12px; min-height: 36px; }
+.spec-picker-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+/* Category list (level 1) */
+.spec-picker-cat-item {
+  display: flex; align-items: center; padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer; touch-action: manipulation;
+  min-height: 48px; font-size: 0.85rem; color: var(--text-primary);
+  transition: background 0.12s;
+}
+.spec-picker-cat-item:active { background: var(--bg-card-hover); }
+.spec-picker-cat-emoji { font-size: 1rem; margin-right: 8px; flex-shrink: 0; width: 24px; text-align: center; }
+.spec-picker-cat-name { flex: 1; font-weight: 600; }
+.spec-picker-cat-count { font-size: 0.7rem; color: var(--text-muted); margin-right: 4px; }
+.spec-picker-cat-arrow { font-size: 0.7rem; color: var(--text-muted); }
+/* Spec grid (level 2, inside a category) */
+.spec-picker-spec-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+  font-size: 0.82rem; font-weight: 600; color: var(--text-primary);
+}
+.spec-picker-back {
+  font-size: 0.85rem; color: var(--accent); background: none; border: none;
+  padding: 4px 8px; cursor: pointer; touch-action: manipulation;
+  min-height: 36px; min-width: 44px;
+}
+.spec-picker-spec-grid {
+  display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 16px;
+}
+.spec-picker-spec-btn {
+  padding: 9px 14px; font-size: 0.75rem; min-height: 40px; min-width: 44px;
+  border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg-secondary); color: var(--text-secondary);
+  cursor: pointer; touch-action: manipulation;
+  transition: background 0.12s, border-color 0.12s;
+  white-space: nowrap;
+}
+.spec-picker-spec-btn:active { background: var(--bg-card-hover); }
+.spec-picker-spec-btn.active {
+  background: var(--accent-glow); color: var(--accent);
+  border-color: var(--accent);
+}
+/* Mobile trigger button */
+.spec-picker-trigger {
+  display: none;
+  width: 100%; padding: 10px 12px; font-size: 0.82rem; font-weight: 600;
+  background: var(--bg-card); border: 1px solid var(--accent);
+  border-radius: 8px; color: var(--accent); cursor: pointer;
+  touch-action: manipulation; min-height: 44px;
+  text-align: left; margin-top: 6px;
+}
+.spec-picker-trigger .picker-trigger-count {
+  float: right; font-weight: 400; font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+/* Hide old expand button on mobile, show spec picker trigger */
+@media (max-width: 900px) {
+  .mobile-spec-expand-btn { display: none !important; }
+  .spec-picker-trigger { display: block; }
+}
 </style>
 </head>
 <body>
@@ -1226,6 +1328,9 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
         <button class="btn btn-sm" id="btnExportImage" style="font-size:0.7rem" title="将对比表导出为高清PNG图片">📸 导出图片</button>
         <button class="btn btn-sm" id="btnExportCSV" style="font-size:0.7rem" title="导出对比表为CSV文件（可用Excel打开）">📥 导出CSV</button>
         <button class="btn btn-sm mobile-spec-expand-btn" id="btnMobileExpandSpecs" style="font-size:0.7rem" title="在手机上显示全部规格分类">📋 展开全部规格</button>
+        <button class="btn btn-sm spec-picker-trigger" id="specPickerTrigger">
+          🔍 筛选规格 <span class="picker-trigger-count" id="specPickerCount"></span>
+        </button>
       </div>
       <div class="compare-controls__row compare-controls__row--tight">
         <span class="compare-controls__label--sm">年份：</span>
@@ -1296,6 +1401,23 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
         <button class="btn btn-sm" id="chipPickerSelectNone" style="font-size:0.75rem;padding:6px 12px;min-height:36px">清空</button>
       </div>
       <div class="chip-picker-body" id="chipPickerBody"></div>
+    </div>
+  </div>
+
+  <!-- ── Mobile Spec Picker overlay ── -->
+  <div class="spec-picker-overlay" id="specPickerOverlay">
+    <div class="spec-picker-sheet" id="specPickerSheet">
+      <div class="spec-picker-handle"></div>
+      <div class="spec-picker-head">
+        <span class="spec-picker-title" id="specPickerTitle">筛选规格</span>
+        <button class="spec-picker-done" id="specPickerDone">完成</button>
+      </div>
+      <div class="spec-picker-presets">
+        <button class="btn btn-sm" id="specPickerSelectAll" style="font-size:0.75rem;padding:6px 12px;min-height:36px">全选</button>
+        <button class="btn btn-sm" id="specPickerCore" style="font-size:0.75rem;padding:6px 12px;min-height:36px">核心规格</button>
+        <button class="btn btn-sm" id="specPickerSelectNone" style="font-size:0.75rem;padding:6px 12px;min-height:36px">清空</button>
+      </div>
+      <div class="spec-picker-body" id="specPickerBody"></div>
     </div>
   </div>
 
@@ -4644,7 +4766,7 @@ class UIRenderer {
       App.state.sortSpec,
       App.state.hiddenCategories ? Array.from(App.state.hiddenCategories).sort() : null,
       App.state.hideSparseChips,
-      App.state.mobileExpandSpecs,
+      App.state.visibleSpecs ? Array.from(App.state.visibleSpecs).sort() : null,
       window.innerWidth <= 900,
       CHIP_META.length,
       SpecExtractor.countDynamicCells(specExtractions)
@@ -4757,11 +4879,21 @@ class UIRenderer {
 
     // Group specs by category
     var cats = SPEC_CATEGORIES;
-    // ── Mobile/tablet compact mode: default to 5 core categories ──
-    if (window.innerWidth <= 900 && !App.state.mobileExpandSpecs) {
-      cats = [];
-      for (var ci = 0; ci < SPEC_CATEGORIES.length; ci++) {
-        if (SPEC_CATEGORIES[ci].mobileDefault !== false) cats.push(SPEC_CATEGORIES[ci]);
+    // ── Mobile/tablet: compute visible spec keys for fine-grained filtering ──
+    var visibleSpecKeys = null;
+    if (window.innerWidth <= 900) {
+      if (App.state.visibleSpecs !== null) {
+        visibleSpecKeys = App.state.visibleSpecs;  // User customized via picker
+      } else {
+        // Default: specs from 5 core categories (mobileDefault !== false)
+        visibleSpecKeys = new Set();
+        for (var ci = 0; ci < SPEC_CATEGORIES.length; ci++) {
+          if (SPEC_CATEGORIES[ci].mobileDefault !== false) {
+            for (var ki = 0; ki < SPEC_CATEGORIES[ci].keys.length; ki++) {
+              visibleSpecKeys.add(SPEC_CATEGORIES[ci].keys[ki]);
+            }
+          }
+        }
       }
     }
     var collapsedCats = App.state.collapsedCategories;
@@ -4770,8 +4902,12 @@ class UIRenderer {
       var cat = cats[gi];
       var isCollapsed = collapsedCats.has(cat.id);
       var catSpecs = [];
+      var catTotalKeys = 0;
       for (var csi = 0; csi < cat.keys.length; csi++) {
         var sk = cat.keys[csi];
+        // Skip specs not in the visible set (mobile filtering)
+        if (visibleSpecKeys !== null && !visibleSpecKeys.has(sk)) continue;
+        catTotalKeys++;
         var idx = specIdxMap[sk];
         if (idx != null) catSpecs.push({ spec: specs[idx], idx: idx });
       }
@@ -4891,6 +5027,20 @@ class UIRenderer {
     headerParts.push('</tr></tfoot>');
 
     table.innerHTML = headerParts.join('');
+
+    // Update spec picker count badge (mobile)
+    var spCount = document.getElementById('specPickerCount');
+    if (spCount) {
+      var spTotal = 0;
+      var spVis = 0;
+      for (var sci = 0; sci < SPEC_CATEGORIES.length; sci++) {
+        spTotal += SPEC_CATEGORIES[sci].keys.length;
+        for (var ski = 0; ski < SPEC_CATEGORIES[sci].keys.length; ski++) {
+          if (visibleSpecKeys === null || visibleSpecKeys.has(SPEC_CATEGORIES[sci].keys[ski])) spVis++;
+        }
+      }
+      spCount.textContent = spVis + '/' + spTotal + '个';
+    }
 
     // Update the dynamic data count in the collapsible note
     var noteDyn = document.getElementById('noteDynamic');
@@ -6251,7 +6401,8 @@ const App = {
 
     selectedYears: null,    // null = all years; Set of year numbers (e.g., 2025, 2026) when filtered
     collapsedCategories: null, // null = all expanded; Set of category ids that are collapsed
-    mobileExpandSpecs: false,   // mobile-only: true = show all spec categories (not just 5 core)
+    mobileExpandSpecs: false,   // mobile-only: true = show all spec categories (not just 5 core) — deprecated, use visibleSpecs on mobile
+    visibleSpecs: null,        // mobile-only: null=default(5 core) | Set=user-customized visible spec keys
     _collapsedVendors: null,   // null = all collapsed; {vendorName: true} when collapsed (UI state, not persisted)
     activePresets: null,       // null = no preset active; Set of preset keys when active (multi-select)
     hiddenCategories: null,    // null = use DEFAULT_HIDDEN_CATEGORIES; Set = user override
@@ -7911,6 +8062,250 @@ const App = {
 
     // Update picker count on initial load
     _updatePickerCount();
+
+    // ═══════════════════════════════════════════════════════════
+    // Mobile Spec Picker — bottom sheet overlay (two-level)
+    // ═══════════════════════════════════════════════════════════
+    var specPickerOverlay = document.getElementById('specPickerOverlay');
+    var specPickerBody = document.getElementById('specPickerBody');
+    var specPickerTitle = document.getElementById('specPickerTitle');
+    var specPickerCount = document.getElementById('specPickerCount');
+    var specPickerTrigger = document.getElementById('specPickerTrigger');
+    var _specPickerCat = null; // currently selected category in picker
+
+    // Helper: return Set of default visible spec keys (5 core categories)
+    function _getDefaultSpecKeys() {
+      var keys = new Set();
+      for (var ci = 0; ci < SPEC_CATEGORIES.length; ci++) {
+        if (SPEC_CATEGORIES[ci].mobileDefault !== false) {
+          for (var ki = 0; ki < SPEC_CATEGORIES[ci].keys.length; ki++) {
+            keys.add(SPEC_CATEGORIES[ci].keys[ki]);
+          }
+        }
+      }
+      return keys;
+    }
+
+    // Helper: check if a spec key is currently visible
+    function _isSpecVisible(specKey) {
+      if (App.state.visibleSpecs !== null) {
+        return App.state.visibleSpecs.has(specKey);
+      }
+      // Default: check core categories
+      var defKeys = _getDefaultSpecKeys();
+      return defKeys.has(specKey);
+    }
+
+    // Helper: count visible specs in a category
+    function _countVisibleInCat(cat) {
+      var n = 0;
+      for (var ki = 0; ki < cat.keys.length; ki++) {
+        if (_isSpecVisible(cat.keys[ki])) n++;
+      }
+      return n;
+    }
+
+    // Helper: total visible spec count across all categories
+    function _totalVisibleSpecs() {
+      var n = 0;
+      for (var ci = 0; ci < SPEC_CATEGORIES.length; ci++) {
+        for (var ki = 0; ki < SPEC_CATEGORIES[ci].keys.length; ki++) {
+          if (_isSpecVisible(SPEC_CATEGORIES[ci].keys[ki])) n++;
+        }
+      }
+      return n;
+    }
+
+    // Helper: total spec count across all categories
+    function _totalSpecs() {
+      var n = 0;
+      for (var ci = 0; ci < SPEC_CATEGORIES.length; ci++) {
+        n += SPEC_CATEGORIES[ci].keys.length;
+      }
+      return n;
+    }
+
+    // Update trigger button count badge
+    function _updateSpecPickerCount() {
+      if (!specPickerCount) return;
+      var total = _totalSpecs();
+      var n = _totalVisibleSpecs();
+      specPickerCount.textContent = n + '/' + total + '个';
+    }
+
+    // Render category list in picker (level 1)
+    function _renderSpecPickerCategories() {
+      _specPickerCat = null;
+      specPickerTitle.textContent = '筛选规格';
+      var html = '';
+      for (var ci = 0; ci < SPEC_CATEGORIES.length; ci++) {
+        var cat = SPEC_CATEGORIES[ci];
+        var visN = _countVisibleInCat(cat);
+        // Extract emoji from label (first 2 chars are emoji + space)
+        var emoji = cat.label.substring(0, 2);
+        var name = cat.label.substring(2).trim();
+        html += '<div class="spec-picker-cat-item" data-cat="' + cat.id + '">' +
+          '<span class="spec-picker-cat-emoji">' + emoji + '</span>' +
+          '<span class="spec-picker-cat-name">' + name + '</span>' +
+          '<span class="spec-picker-cat-count">' + visN + '/' + cat.keys.length + '</span>' +
+          '<span class="spec-picker-cat-arrow">▶</span>' +
+          '</div>';
+      }
+      specPickerBody.innerHTML = html;
+      // Bind category tap
+      var items = specPickerBody.querySelectorAll('.spec-picker-cat-item');
+      for (var ii = 0; ii < items.length; ii++) {
+        items[ii].addEventListener('click', function(e) {
+          var catId = this.getAttribute('data-cat');
+          _renderSpecPickerSpecs(catId);
+        });
+      }
+    }
+
+    // Render spec list for a category in picker (level 2)
+    function _renderSpecPickerSpecs(catId) {
+      var cat = null;
+      for (var ci = 0; ci < SPEC_CATEGORIES.length; ci++) {
+        if (SPEC_CATEGORIES[ci].id === catId) { cat = SPEC_CATEGORIES[ci]; break; }
+      }
+      if (!cat) return;
+      _specPickerCat = catId;
+      var emoji = cat.label.substring(0, 2);
+      var name = cat.label.substring(2).trim();
+      specPickerTitle.textContent = name;
+      var html = '<div class="spec-picker-spec-head">' +
+        '<button class="spec-picker-back" id="specPickerBack">← 返回</button>' +
+        '<span>' + emoji + ' ' + name + ' <span style="font-weight:400;color:var(--text-muted);font-size:0.7rem">' + cat.keys.length + '个</span></span>' +
+        '</div>';
+      html += '<div class="spec-picker-spec-grid">';
+      for (var ki = 0; ki < cat.keys.length; ki++) {
+        var sk = cat.keys[ki];
+        // Find label from COMPETITOR_SPECS
+        var label = sk;
+        for (var si = 0; si < COMPETITOR_SPECS.length; si++) {
+          if (COMPETITOR_SPECS[si].key === sk) { label = COMPETITOR_SPECS[si].label; break; }
+        }
+        var isOn = _isSpecVisible(sk);
+        html += '<button class="spec-picker-spec-btn' + (isOn ? ' active' : '') +
+          '" data-spec="' + sk + '">' + label + '</button>';
+      }
+      html += '</div>';
+      specPickerBody.innerHTML = html;
+      // Bind back button
+      var backBtn = document.getElementById('specPickerBack');
+      if (backBtn) {
+        backBtn.addEventListener('click', function() {
+          _renderSpecPickerCategories();
+        });
+      }
+      // Bind spec toggle
+      var specBtns = specPickerBody.querySelectorAll('.spec-picker-spec-btn');
+      for (var sbi = 0; sbi < specBtns.length; sbi++) {
+        specBtns[sbi].addEventListener('click', function(e) {
+          e.stopPropagation();
+          var specKey = this.getAttribute('data-spec');
+          // Init visibleSpecs from current state if null
+          if (App.state.visibleSpecs === null) {
+            App.state.visibleSpecs = _getDefaultSpecKeys();
+          }
+          // Toggle
+          if (App.state.visibleSpecs.has(specKey)) {
+            App.state.visibleSpecs.delete(specKey);
+          } else {
+            App.state.visibleSpecs.add(specKey);
+          }
+          // Revert to null if matches default core set
+          var defKeys = _getDefaultSpecKeys();
+          var matchesDefault = true;
+          if (App.state.visibleSpecs.size !== defKeys.size) {
+            matchesDefault = false;
+          } else {
+            var vit = App.state.visibleSpecs.values();
+            var vitem = vit.next();
+            while (!vitem.done) {
+              if (!defKeys.has(vitem.value)) { matchesDefault = false; break; }
+              vitem = vit.next();
+            }
+          }
+          if (matchesDefault) App.state.visibleSpecs = null;
+          // Refresh table + picker
+          UIRenderer.renderComparisonTable(App.state.specExtractions);
+          _updateSpecPickerCount();
+          _renderSpecPickerSpecs(catId);
+        });
+      }
+    }
+
+    // Open picker
+    function _openSpecPicker() {
+      _updateSpecPickerCount();
+      _renderSpecPickerCategories();
+      specPickerOverlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Close picker
+    function _closeSpecPicker() {
+      specPickerOverlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    // Trigger button
+    if (specPickerTrigger) {
+      specPickerTrigger.addEventListener('click', _openSpecPicker);
+    }
+
+    // Close on overlay tap (outside sheet)
+    if (specPickerOverlay) {
+      specPickerOverlay.addEventListener('click', function(e) {
+        if (e.target === specPickerOverlay) _closeSpecPicker();
+      });
+    }
+
+    // Done button
+    var specPickerDone = document.getElementById('specPickerDone');
+    if (specPickerDone) {
+      specPickerDone.addEventListener('click', _closeSpecPicker);
+    }
+
+    // Select All button
+    var specPickerSelectAll = document.getElementById('specPickerSelectAll');
+    if (specPickerSelectAll) {
+      specPickerSelectAll.addEventListener('click', function() {
+        App.state.visibleSpecs = null;
+        UIRenderer.renderComparisonTable(App.state.specExtractions);
+        _updateSpecPickerCount();
+        if (_specPickerCat) _renderSpecPickerSpecs(_specPickerCat);
+        else _renderSpecPickerCategories();
+      });
+    }
+
+    // Core Specs button (5 core categories)
+    var specPickerCore = document.getElementById('specPickerCore');
+    if (specPickerCore) {
+      specPickerCore.addEventListener('click', function() {
+        App.state.visibleSpecs = _getDefaultSpecKeys();
+        UIRenderer.renderComparisonTable(App.state.specExtractions);
+        _updateSpecPickerCount();
+        if (_specPickerCat) _renderSpecPickerSpecs(_specPickerCat);
+        else _renderSpecPickerCategories();
+      });
+    }
+
+    // Select None button
+    var specPickerSelectNone = document.getElementById('specPickerSelectNone');
+    if (specPickerSelectNone) {
+      specPickerSelectNone.addEventListener('click', function() {
+        App.state.visibleSpecs = new Set();
+        UIRenderer.renderComparisonTable(App.state.specExtractions);
+        _updateSpecPickerCount();
+        if (_specPickerCat) _renderSpecPickerSpecs(_specPickerCat);
+        else _renderSpecPickerCategories();
+      });
+    }
+
+    // Update spec picker count on initial load
+    _updateSpecPickerCount();
 
     // Sort selector change handler (delegated on chipToggles)
     document.getElementById('chipToggles').addEventListener('change', function(e) {
