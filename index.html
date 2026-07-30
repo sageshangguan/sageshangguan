@@ -664,74 +664,7 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
 .chip-preset.active { background: var(--accent-glow); color: var(--accent); border-color: var(--accent) !important; }
 
 /* ── Summary Cards (P2: at-a-glance top metrics) ── */
-.summary-cards {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 10px;
-}
-.summary-card {
-  flex: 1 1 160px;
-  min-width: 140px;
-  max-width: 220px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-.summary-card-header {
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 5px 8px;
-  background: var(--bg-card-hover);
-  border-bottom: 1px solid var(--border);
-  color: var(--text);
-  white-space: nowrap;
-}
-.summary-card-body {
-  padding: 3px 0;
-}
-.summary-card-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
-  font-size: 0.62rem;
-  white-space: nowrap;
-  cursor: default;
-}
-.summary-card-item:hover {
-  background: var(--bg-card-hover);
-}
-.summary-medal {
-  font-size: 0.7rem;
-  flex: 0 0 auto;
-}
-.summary-chip-name {
-  flex: 0 1 auto;
-  min-width: 2.5em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-weight: 600;
-  color: var(--text);
-}
-.summary-chip-val {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: var(--text-muted);
-  font-size: 0.58rem;
-}
-@media (max-width: 900px) {
-  .summary-cards { gap: 6px; }
-  .summary-card { flex: 1 1 130px; min-width: 120px; max-width: 180px; }
-}
 @media (max-width: 560px) {
-  .summary-cards { flex-direction: column; gap: 4px; }
-  .summary-card { flex: 1 1 auto; min-width: 0; max-width: none; }
-  .summary-card-body { display: flex; flex-wrap: wrap; gap: 2px; padding: 4px; }
-  .summary-card-item { flex: 1 1 auto; min-width: 100px; }
   .mobile-spec-expand-btn { display: inline-block !important; }
 }
 
@@ -1078,6 +1011,22 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
   .comp-group-header { padding: 10px 10px; font-size: 0.8rem; min-height: 36px; }
   .comp-chip-item { padding: 8px 10px 8px 28px; font-size: 0.78rem; min-height: 36px; }
   .comp-expand-all, .comp-collapse-all { font-size: 0.85rem; padding: 4px 6px; display: inline-block; min-width: 32px; text-align: center; }
+  /* ── Chip toggle section mobile fixes ── */
+  .chip-toggles-section { margin: 6px 0; padding: 6px 8px; }
+  .chip-toggles-section__header { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .chip-toggles-section__list { max-height: 170px; padding: 4px 0; }
+  .chip-vendor-group { margin: 1px 0; }
+  .chip-vendor-header { min-height: 36px; padding: 7px 10px; font-size: 0.72rem; }
+  .chip-vendor-name { padding: 3px 5px; }
+  .chip-vendor-chips { gap: 3px; padding: 5px 7px; }
+  .chip-toggle { font-size: 0.64rem !important; padding: 5px 8px !important; min-height: 36px; min-width: 36px; }
+  .chip-all { font-size: 0.66rem !important; padding: 5px 10px !important; min-height: 36px; }
+  .chip-ghost-toggle { font-size: 0.6rem !important; padding: 5px 8px !important; min-height: 36px !important; }
+  .chip-sort-select { font-size: 0.6rem !important; padding: 5px 6px !important; min-height: 36px; }
+  .chip-expand-all { font-size: 0.62rem !important; padding: 5px 8px !important; min-height: 36px; }
+  .chip-preset { font-size: 0.62rem !important; padding: 5px 8px !important; min-height: 36px; }
+  .chip-filter-bar { gap: 4px; }
+  .compare-controls__label { font-size: 0.72rem; }
   .news-card { padding: 14px; }
   .news-card-title { font-size: 0.9rem; }
   .card-action-btn { width: 36px; height: 36px; } /* Larger fav/share buttons */
@@ -1181,7 +1130,6 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
     </div>
     <span id="chipToggles" class="chip-toggles-section__list"></span>
   </div>
-  <div id="summaryCards" class="summary-cards"></div>
   <div class="compare-table-wrap">
     <table class="compare-table" id="compareTable"></table>
   </div>
@@ -3954,7 +3902,6 @@ class UIRenderer {
     UIRenderer.renderYearToggles();
     UIRenderer.renderChipToggles();
     UIRenderer.renderNewChipBanner(App.state.detectedChips);
-    UIRenderer.renderSummaryCards();
     UIRenderer.renderComparisonTable(App.state.specExtractions);
     UIRenderer.renderDeploymentTable();
   }
@@ -4536,100 +4483,6 @@ class UIRenderer {
       if (val.indexOf('Basic ECC') >= 0 || val.indexOf('ECC (HBM)') >= 0) return 'val-mid';
     }
     return '';
-  }
-
-  /**
-   * Render summary cards above the comparison table — top chips by key metrics.
-   */
-  static renderSummaryCards() {
-    var container = document.getElementById('summaryCards');
-    if (!container) return;
-    var chips = CHIP_META.filter(function(c) { return UIRenderer._isChipVisible(c.id); });
-    if (chips.length < 2) { container.innerHTML = ''; return; }
-
-    // Find spec rows
-    var fp16Row = null, memBwRow = null, tdpRow = null, energyRow = null, memRow = null;
-    for (var si = 0; si < COMPETITOR_SPECS.length; si++) {
-      var r = COMPETITOR_SPECS[si];
-      if (r.key === 'fp16') fp16Row = r;
-      if (r.key === 'mem_bw') memBwRow = r;
-      if (r.key === 'tdp') tdpRow = r;
-      if (r.key === 'energy_eff') energyRow = r;
-      if (r.key === 'memory') memRow = r;
-    }
-
-    // Parse a numeric value from a spec string, handling various units.
-    // Returns -1 if unparseable.
-    function parseVal(raw) {
-      if (!raw || raw === '-' || raw === '不支持' || raw === '未公布' || raw === '未公开' ||
-          raw.indexOf('未发布') >= 0 || raw.indexOf('N/A') >= 0) return -1;
-      // Strip leading ~ and spaces
-      var s = raw.replace(/^~\s*/, '').replace(/\s*\(.*\)\s*$/, '').trim();
-      // Try matching: number [unit]
-      // Units: TFLOPS, PFLOPS, TOPS, TB/s, GB/s, TF/W, TOPS/W, W, GB, MB, GHz, MHz
-      var m = s.match(/^([\d,]+(?:\.\d+)?)\s*(PFLOPS|TFLOPS|TOPS|TB\/s|GB\/s|TF\/W|TOPS\/W|W|GB|MB|GHz|MHz)?/i);
-      if (!m) return -1;
-      var num = parseFloat(m[1].replace(/,/g, ''));
-      var unit = (m[2] || '').toUpperCase();
-      // Normalize to a common comparable unit
-      if (unit === 'PFLOPS') num *= 1000;          // → TFLOPS
-      if (unit === 'TB/S') num *= 1000;             // → GB/s (unified)
-      if (unit === 'MB') num /= 1024;               // → GB
-      if (unit === 'GHZ') num *= 1000;              // → MHz
-      return num;
-    }
-
-    // Rank chips by a spec row (descending)
-    function rankBy(row, topN, isTdp) {
-      var ranked = [];
-      for (var ci = 0; ci < chips.length; ci++) {
-        var cid = chips[ci].id;
-        var raw = row ? (row[cid] || '') : '';
-        var val = parseVal(raw);
-        if (val > 0) {
-          // For TDP, filter out implausible values (>2000W)
-          if (isTdp && val > 2000) continue;
-          ranked.push({ id: cid, name: chips[ci].name, color: chips[ci].color, vendor: chips[ci].vendor, val: val, raw: raw });
-        }
-      }
-      ranked.sort(function(a, b) { return isTdp ? (a.val - b.val) : (b.val - a.val); });
-      return ranked.slice(0, topN);
-    }
-
-    // Build cards
-    var cards = [
-      { icon: '🔥', label: '最强 FP16 算力', items: rankBy(fp16Row, 3, false) },
-      { icon: '💾', label: '最大显存带宽', items: rankBy(memBwRow, 3, false) },
-      { icon: '⚡', label: '最高能效', items: rankBy(energyRow, 3, false) },
-      { icon: '❄️', label: '最低功耗', items: rankBy(tdpRow, 3, true) },
-      { icon: '🧠', label: '最大显存', items: rankBy(memRow, 3, false) }
-    ];
-
-    var html = '';
-    for (var ci = 0; ci < cards.length; ci++) {
-      var card = cards[ci];
-      if (card.items.length === 0) continue;
-      html += '<div class="summary-card">';
-      html += '<div class="summary-card-header">' + card.icon + ' ' + card.label + '</div>';
-      html += '<div class="summary-card-body">';
-      for (var ii = 0; ii < card.items.length; ii++) {
-        var item = card.items[ii];
-        var medal = ii === 0 ? '🥇' : ii === 1 ? '🥈' : '🥉';
-        html += '<div class="summary-card-item" style="border-left:3px solid ' + item.color + '">' +
-          '<span class="summary-medal">' + medal + '</span>' +
-          '<span class="summary-chip-name" title="' + item.name + ' — ' + item.vendor + ' | ' + item.raw + '">' + item.name + '</span>' +
-          '<span class="summary-chip-val">' + item.raw + '</span>' +
-          '</div>';
-      }
-      html += '</div></div>';
-    }
-    container.innerHTML = html;
-    // Sync the vendor toggle-all button text
-    var toggleBtn2 = document.getElementById('btnToggleAllVendors');
-    if (toggleBtn2) {
-      var allExpanded2 = App.state._collapsedVendors !== null && Object.keys(App.state._collapsedVendors).length === 0;
-      toggleBtn2.innerHTML = allExpanded2 ? '📁 折叠全部' : '📂 展开全部';
-    }
   }
 
   /**
