@@ -588,43 +588,49 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
 .compare-controls__label { font-size: 0.75rem; color: var(--text-muted); }
 .compare-controls__label--sm { font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; }
 .compare-controls__btns { display: flex; gap: 3px; flex-wrap: wrap; }
-/* Chip toggles section — replaces inline style on #chipTogglesSection */
-.chip-toggles-section {
-  margin: 12px 0; padding: 10px 12px;
+/* ── Unified Config Bar (chip + year + spec + sort) ── */
+.config-bar {
+  margin: 12px 0; padding: 0;
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: var(--radius);
+  overflow: hidden;
 }
-.chip-toggles-section__header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
-.chip-toggles-section__list {
-  display: flex; gap: 3px; flex-wrap: wrap; width: 100%;
-  max-height: 220px; overflow-y: auto;
-  padding: 2px 0;
-  /* subtle scrollbar for webkit */
+.config-bar__title {
+  font-size: 0.7rem; font-weight: 700; color: var(--text-muted);
+  padding: 8px 14px 6px;
+  border-bottom: 1px solid var(--border);
+  letter-spacing: 0.02em;
 }
-.chip-toggles-section__list::-webkit-scrollbar { width: 6px; }
-.chip-toggles-section__list::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
-
-.chip-sort-select { cursor: pointer; font-size: 0.55rem; padding: 2px 4px; border-radius: 3px; border: 1px solid #4a5568; background: #1e293b; color: #e2e8f0; margin-left: 2px; }
-.chip-sort-select option { background: #1e293b; color: #e2e8f0; }
-
-.chip-expand-all {
-  background: var(--bg-secondary); color: var(--text-secondary);
-  border: 1px solid var(--border) !important;
-  border-radius: 4px; cursor: pointer;
-  transition: var(--transition);
-  font-size: 0.6rem; padding: 2px 7px;
+.config-bar__body {
+  padding: 8px 14px 10px;
 }
-.chip-expand-all:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+.config-bar__row {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.config-bar__row--primary {
+  margin-bottom: 8px;
+}
+.config-bar__row--secondary {
+  gap: 8px;
+}
+.config-bar__group {
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.config-bar__label {
+  font-size: 0.7rem; font-weight: 600; color: var(--text-secondary);
+  white-space: nowrap;
+}
+.chip-all-btn {
+  font-size: 0.65rem; padding: 3px 8px; font-weight: 600;
+  margin-left: 2px;
+}
+/* Inline chip toggle list — replaced by picker, always hidden */
+.chip-toggles-section__list { display: none; }
 
-.chip-filter-bar { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-left: 4px; }
+.chip-sort-select { cursor: pointer; font-size: 0.7rem; padding: 3px 6px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); }
+.chip-sort-select option { background: var(--bg-card); color: var(--text-primary); }
 
-.chip-all { font-size: 0.65rem; padding: 3px 8px; font-weight: 600; }
-
-.chip-ghost-toggle { font-size: 0.55rem; padding: 2px 5px; }
-
-.chip-toggle { font-size: 0.6rem; padding: 2px 5px; }
-
-/* Vendor-grouped chip toggles */
+/* Vendor-group toggles (unused, kept for reference) */
 .chip-vendor-group {
   display: inline-flex; flex-direction: column;
   margin: 2px 0; border: 1px solid var(--border);
@@ -1021,10 +1027,16 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
   .comp-group-header { padding: 10px 10px; font-size: 0.8rem; min-height: 36px; }
   .comp-chip-item { padding: 8px 10px 8px 28px; font-size: 0.78rem; min-height: 36px; }
   .comp-expand-all, .comp-collapse-all { font-size: 0.85rem; padding: 4px 6px; display: inline-block; min-width: 32px; text-align: center; }
-  /* ── Chip toggle section mobile fixes ── */
-  .chip-toggles-section { margin: 6px 0; padding: 6px 8px; }
-  .chip-toggles-section__header { flex-direction: column; align-items: flex-start; gap: 4px; }
-  .chip-toggles-section__list { max-height: none; overflow: visible; padding: 4px 0; }
+  /* ── Config bar mobile ── */
+  .config-bar { margin: 6px 0; border-radius: var(--radius); }
+  .config-bar__title { font-size: 0.68rem; padding: 8px 12px 6px; }
+  .config-bar__body { padding: 8px 12px 10px; }
+  .config-bar__row { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .config-bar__row--primary { gap: 8px; }
+  .config-bar__row--secondary { gap: 7px; }
+  .config-bar__group { width: 100%; flex-wrap: wrap; }
+  .config-bar__label { font-size: 0.72rem; }
+  .chip-all-btn { font-size: 0.7rem; padding: 5px 10px; min-height: 36px; }
   .chip-vendor-group { margin: 1px 0; }
   .chip-vendor-header { min-height: 36px; padding: 7px 10px; font-size: 0.72rem; }
   .chip-vendor-name { padding: 3px 5px; }
@@ -1183,26 +1195,39 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
   background: var(--accent-glow); color: var(--accent);
   border-color: var(--accent);
 }
-/* Mobile trigger button */
+/* Chip picker trigger — always visible, responsive */
 .chip-picker-trigger {
-  display: none;
+  display: block;
   width: 100%; padding: 10px 12px; font-size: 0.82rem; font-weight: 600;
   background: var(--bg-card); border: 1px solid var(--accent);
   border-radius: 8px; color: var(--accent); cursor: pointer;
   touch-action: manipulation; min-height: 44px;
-  text-align: left;
+  text-align: left; margin-top: 4px;
 }
 .chip-picker-trigger .picker-trigger-count {
   float: right; font-weight: 400; font-size: 0.7rem;
   color: var(--text-muted);
 }
-
-/* Hide inline toggles on mobile, show picker trigger instead */
-@media (max-width: 900px) {
-  .chip-toggles-section__list { display: none; }
-  .chip-picker-trigger { display: block; }
-  .chip-toggles-section__header { align-items: flex-start; }
+/* Desktop: compact inline button in header */
+@media (min-width: 901px) {
+  .chip-picker-trigger {
+    display: inline-block;
+    width: auto;
+    padding: 4px 12px;
+    font-size: 0.73rem;
+    min-height: 28px;
+    margin-top: 0;
+    margin-left: 6px;
+  }
+  .chip-picker-trigger .picker-trigger-count {
+    float: none;
+    margin-left: 4px;
+  }
 }
+
+/* Inline chip toggles replaced by picker on all screen sizes */
+.chip-toggles-section__list { display: none; }
+.chip-expand-all { display: none; }
 
 /* ── Mobile Spec Picker — bottom sheet overlay (two-level) ── */
 .spec-picker-overlay {
@@ -1296,24 +1321,56 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
   background: var(--accent-glow); color: var(--accent);
   border-color: var(--accent);
 }
-/* Mobile trigger button */
+/* Spec picker trigger — always visible, responsive */
 .spec-picker-trigger {
-  display: none;
-  width: 100%; padding: 10px 12px; font-size: 0.82rem; font-weight: 600;
+  display: inline-block;
+  width: auto;
+  padding: 4px 12px; font-size: 0.73rem; font-weight: 600;
   background: var(--bg-card); border: 1px solid var(--accent);
   border-radius: 8px; color: var(--accent); cursor: pointer;
-  touch-action: manipulation; min-height: 44px;
-  text-align: left; margin-top: 6px;
+  touch-action: manipulation; min-height: 28px;
+  text-align: left;
 }
 .spec-picker-trigger .picker-trigger-count {
-  float: right; font-weight: 400; font-size: 0.7rem;
-  color: var(--text-muted);
+  font-weight: 400; font-size: 0.7rem;
+  color: var(--text-muted); margin-left: 4px;
+}
+/* Mobile: full-width block */
+@media (max-width: 900px) {
+  .spec-picker-trigger {
+    display: block;
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 0.82rem;
+    min-height: 44px;
+    margin-top: 6px;
+  }
+  .spec-picker-trigger .picker-trigger-count {
+    float: right;
+    margin-left: 0;
+  }
+  .mobile-spec-expand-btn { display: none !important; }
 }
 
-/* Hide old expand button on mobile, show spec picker trigger */
-@media (max-width: 900px) {
-  .mobile-spec-expand-btn { display: none !important; }
-  .spec-picker-trigger { display: block; }
+/* ── Desktop: picker sheets as centered dialogs ── */
+@media (min-width: 901px) {
+  .chip-picker-overlay,
+  .spec-picker-overlay {
+    align-items: center;
+    justify-content: center;
+  }
+  .chip-picker-sheet,
+  .spec-picker-sheet {
+    width: 520px;
+    max-width: 92vw;
+    max-height: 78vh;
+    border-radius: 18px;
+    margin: 0 20px;
+  }
+  .chip-picker-handle,
+  .spec-picker-handle {
+    display: none;
+  }
 }
 </style>
 </head>
@@ -1343,38 +1400,46 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
   <div class="compare-header">
     <h3>📊 AI 芯片横向对比 · 规格速查表</h3>
     <div class="compare-controls">
-      <div class="compare-controls__row">
-        <span class="compare-controls__label">规格表：</span>
-        <button class="btn btn-sm" id="btnExportImage" style="font-size:0.7rem" title="将对比表导出为高清PNG图片">📸 导出图片</button>
-        <button class="btn btn-sm" id="btnExportCSV" style="font-size:0.7rem" title="导出对比表为CSV文件（可用Excel打开）">📥 导出CSV</button>
-        <button class="btn btn-sm mobile-spec-expand-btn" id="btnMobileExpandSpecs" style="font-size:0.7rem" title="在手机上显示全部规格分类">📋 展开全部规格</button>
-      </div>
-      <div class="compare-controls__row compare-controls__row--tight">
-        <span class="compare-controls__label--sm">年份：</span>
-        <span id="yearToggles" class="compare-controls__btns"></span>
-      </div>
+      <span class="compare-controls__label">规格表：</span>
+      <button class="btn btn-sm" id="btnExportImage" style="font-size:0.7rem" title="将对比表导出为高清PNG图片">📸 导出图片</button>
+      <button class="btn btn-sm" id="btnExportCSV" style="font-size:0.7rem" title="导出对比表为CSV文件（可用Excel打开）">📥 导出CSV</button>
+      <button class="btn btn-sm mobile-spec-expand-btn" id="btnMobileExpandSpecs" style="font-size:0.7rem" title="在手机上显示全部规格分类">📋 展开全部规格</button>
     </div>
   </div>
   <div id="newChipBanner" style="display:none;background:var(--amber);color:var(--color-black);padding:8px 12px;border-radius:6px;margin-bottom:8px;font-size:0.78rem;line-height:1.5"></div>
-  <div class="chip-toggles-section" id="chipTogglesSection">
-    <div class="chip-toggles-section__header">
-      <span class="compare-controls__label">🔍 芯片列选择：</span>
-      <span class="chip-presets" id="chipPresets">
-        <button class="btn btn-sm chip-preset" data-preset="flagship" title="旗舰标准：当前代际顶级AI加速器（≥H100级别）&#10;涵盖 NVIDIA H100/H200/B200/B300 · AMD MI300X/MI355X · Intel Gaudi 3&#10;华为 Ascend 910C/950PR · Google TPU v6e/v7 · AWS Trainium3&#10;寒武纪 思元590 · 海光 DCU Z100 · 昆仑芯2 · 燧原T20 · 壁仞BR100&#10;摩尔线程 S4000 · 字节 SeedChip · Cerebras CS-3 · Groq LPU&#10;Meta MTIA v2 · OpenAI Jalapeño · Tenstorrent Blackhole&#10;（多选：可与国家/量产组合）">🏆 旗舰</button>
-
-        <button class="btn btn-sm chip-preset" data-preset="production" title="仅显示已量产芯片（多选：可与国家组合）">✅ 已量产</button>
-      </span>
-      <span style="margin-left:auto;display:inline-flex;gap:3px">
-        <button class="btn btn-sm chip-expand-all" id="btnToggleAllVendors" title="展开/折叠全部厂商">📂 展开全部</button>
-      </span>
+  <div class="chip-toggles-section config-bar" id="chipTogglesSection">
+    <div class="config-bar__title">⚙ 芯片规格对比表配置</div>
+    <div class="config-bar__body">
+      <div class="config-bar__row config-bar__row--primary">
+        <span class="config-bar__group">
+          <span class="config-bar__label">芯片：</span>
+          <button class="btn btn-sm chip-all-btn" id="btnChipSelectAll" title="显示全部芯片">全部</button>
+        </span>
+        <span class="config-bar__group">
+          <span class="config-bar__label">年份：</span>
+          <span id="yearToggles" class="compare-controls__btns"></span>
+        </span>
+      </div>
+      <div class="config-bar__row config-bar__row--secondary">
+        <select class="chip-sort-select" id="chipSortSelect" title="按规格排序芯片列">
+          <option value="">📊 默认排序</option>
+          <option value="fp16">🔥 FP16↓</option>
+          <option value="fp8">⚡ FP8↓</option>
+          <option value="mem_bw">💾 带宽↓</option>
+          <option value="tdp">🔌 功耗↓</option>
+          <option value="energy_eff">⚡ 能效↓</option>
+          <option value="memory">🧠 显存↓</option>
+          <option value="release">📅 发布时间</option>
+        </select>
+        <button class="chip-picker-trigger" id="chipPickerTrigger">
+          🔍 选择芯片 <span class="picker-trigger-count" id="chipPickerCount"></span>
+        </button>
+        <button class="spec-picker-trigger" id="specPickerTrigger">
+          🔍 筛选规格 <span class="picker-trigger-count" id="specPickerCount"></span>
+        </button>
+      </div>
     </div>
-    <span id="chipToggles" class="chip-toggles-section__list"></span>
-    <button class="chip-picker-trigger" id="chipPickerTrigger">
-      🔍 选择芯片 <span class="picker-trigger-count" id="chipPickerCount"></span>
-    </button>
-    <button class="chip-picker-trigger spec-picker-trigger" id="specPickerTrigger">
-      🔍 筛选规格 <span class="picker-trigger-count" id="specPickerCount"></span>
-    </button>
+    <span id="chipToggles" class="chip-toggles-section__list" style="display:none"></span>
   </div>
   <div class="compare-table-wrap">
     <table class="compare-table" id="compareTable"></table>
@@ -4181,7 +4246,13 @@ class UIRenderer {
    */
   static _refreshCompareUI() {
     UIRenderer.renderYearToggles();
-    UIRenderer.renderChipToggles();
+    // Update picker count badge (inline toggles replaced by picker)
+    var pCount = document.getElementById('chipPickerCount');
+    if (pCount) {
+      var total = CHIP_META.length;
+      var n = (App.state.visibleChips && App.state.visibleChips.size != null) ? App.state.visibleChips.size : total;
+      pCount.textContent = n + '/' + total;
+    }
     UIRenderer.renderNewChipBanner(App.state.detectedChips);
     UIRenderer.renderComparisonTable(App.state.specExtractions);
     UIRenderer.renderDeploymentTable();
@@ -8430,23 +8501,27 @@ const App = {
     // Update spec picker count on initial load
     _updateSpecPickerCount();
 
-    // Sort selector change handler (delegated on chipToggles)
-    document.getElementById('chipToggles').addEventListener('change', function(e) {
-      var sortSel = e.target.closest('.chip-sort-select');
-      if (!sortSel) return;
-      App.state.sortSpec = sortSel.value || null;
-      UIRenderer._refreshCompareUI();
-    });
+    // Sort selector change handler
+    var chipSortSelect = document.getElementById('chipSortSelect');
+    if (chipSortSelect) {
+      // Init selected option from state
+      if (App.state.sortSpec) chipSortSelect.value = App.state.sortSpec;
+      chipSortSelect.addEventListener('change', function() {
+        App.state.sortSpec = this.value || null;
+        UIRenderer._refreshCompareUI();
+      });
+    }
 
-    // Quick chip presets (multi-select: flagship + production INTERSECT)
-    document.getElementById('chipPresets').addEventListener('click', function(e) {
-      var btn = e.target.closest('.chip-preset');
-      if (!btn) return;
-      var preset = btn.getAttribute('data-preset');
-      App._applyChipPreset(preset);
-      // Auto-expand relevant vendors when applying a preset
-      App._autoExpandVendors();
-    });
+    // "全部" chip button — show all chips
+    var btnChipSelectAll = document.getElementById('btnChipSelectAll');
+    if (btnChipSelectAll) {
+      btnChipSelectAll.addEventListener('click', function() {
+        App.state.visibleChips = null;
+        App.state.activePresets = null;
+        App._updatePresetButtonStates();
+        UIRenderer._refreshCompareUI();
+      });
+    }
 
     // Toggle expand/collapse all vendor groups
     var btnToggleVendors = document.getElementById('btnToggleAllVendors');
