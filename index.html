@@ -1024,7 +1024,7 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
   /* ── Chip toggle section mobile fixes ── */
   .chip-toggles-section { margin: 6px 0; padding: 6px 8px; }
   .chip-toggles-section__header { flex-direction: column; align-items: flex-start; gap: 4px; }
-  .chip-toggles-section__list { max-height: 170px; padding: 4px 0; }
+  .chip-toggles-section__list { max-height: none; overflow: visible; padding: 4px 0; }
   .chip-vendor-group { margin: 1px 0; }
   .chip-vendor-header { min-height: 36px; padding: 7px 10px; font-size: 0.72rem; }
   .chip-vendor-name { padding: 3px 5px; }
@@ -7383,6 +7383,29 @@ const App = {
       }
     });
 
+    // ── Mobile accordion helper: expanding one vendor collapses all others (≤900px) ──
+    function _mobileAccordion(expandedVendor) {
+      if (window.innerWidth > 900) return;
+      if (!App.state._collapsedVendors) return;
+      var vendors = Object.keys(App.state._collapsedVendors);
+      for (var i = 0; i < vendors.length; i++) {
+        if (vendors[i] !== expandedVendor) {
+          App.state._collapsedVendors[vendors[i]] = true;
+        }
+      }
+      // Auto-scroll the expanded vendor into view after DOM updates
+      setTimeout(function () {
+        var groups = document.querySelectorAll('.chip-vendor-group:not(.collapsed)');
+        for (var gi = 0; gi < groups.length; gi++) {
+          var header = groups[gi].querySelector('.chip-vendor-header');
+          if (header && header.getAttribute('data-vendor') === expandedVendor) {
+            groups[gi].scrollIntoView();
+            break;
+          }
+        }
+      }, 60);
+    }
+
     // Chip column toggle: click to show/hide, "×" sub-button to remove custom chips
     document.getElementById('chipToggles').addEventListener('click', function(e) {
       // ── Ghost chip toggle ──
@@ -7422,6 +7445,7 @@ const App = {
           if (!App.state._collapsedVendors) App.state._collapsedVendors = {};
           if (App.state._collapsedVendors[vendor]) {
             delete App.state._collapsedVendors[vendor];
+            _mobileAccordion(vendor);
           } else {
             App.state._collapsedVendors[vendor] = true;
           }
@@ -7487,6 +7511,7 @@ const App = {
           }
           if (App.state._collapsedVendors && App.state._collapsedVendors[vendor]) {
             delete App.state._collapsedVendors[vendor];
+            _mobileAccordion(vendor);
           }
           UIRenderer._refreshCompareUI();
         }
@@ -7511,6 +7536,7 @@ const App = {
           if (!App.state._collapsedVendors) App.state._collapsedVendors = {};
           if (App.state._collapsedVendors[vendor]) {
             delete App.state._collapsedVendors[vendor];
+            _mobileAccordion(vendor);
           } else {
             App.state._collapsedVendors[vendor] = true;
           }
