@@ -1,14 +1,14 @@
 <!--
   华为昇腾芯片 · 新闻追踪
   ============================================================
-  版本: V0.15 (2026-07-29)
+  版本: V0.16 (2026-07-31)
   描述: 单文件 SPA — 聚合华为 Ascend AI 芯片相关新闻 + 74 颗竞品规格动态对比表
   目标: 桌面 Chrome/Edge/Firefox + iOS Safari 12+ + Android Chrome 7+ + 平板
   JS 兼容: Chrome 54+ / Safari 10+（零 ?. / ?? / .flatMap / } catch (e) {）
   规格行: 53 行（7 大分组，可折叠）
   新闻源: 29 个
   芯片: 74 颗
-  新功能: 表格文字精简（单位→标签/溯源→悬浮）· UI 精简（移除分类/国别筛选）· 22 芯片别名补全
+  新功能: 统一配置栏 · 芯片/规格二级面板（桌面+移动端）· 移动端 UI 对齐桌面 · 移除冗余预设/排序选项
   ============================================================
 -->
 <!DOCTYPE html>
@@ -1389,7 +1389,7 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
       <span>↻</span> 刷新
     </button>
     <button class="btn btn-ghost btn-icon" id="btnSettings" title="设置">⚙</button>
-    <span class="version-badge" title="V0.14 · 2026-07-29 · 行业采纳度表 + 源文件分离 + 增强构建系统">V0.14</span>
+    <span class="version-badge" title="V0.16 · 2026-07-31 · 统一配置栏 + 芯片/规格二级面板 + 移动端UI对齐桌面">V0.16</span>
   </div>
 </header>
 
@@ -1733,7 +1733,7 @@ const STORAGE_KEY = 'ascend_news_tracker';
 var DATA_VERSION = 8; // v8: force re-analyze relevance (CHIP_LOWER_INDEX Chinese aliases change score)
 
 // ── 应用版本与改动日志 ──
-const APP_VERSION = 'V0.14';
+const APP_VERSION = 'V0.16';
 
 /*
  * 改动日志 (CHANGELOG)
