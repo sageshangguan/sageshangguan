@@ -674,7 +674,7 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
 .chip-preset.active { background: var(--accent-glow); color: var(--accent); border-color: var(--accent) !important; }
 
 /* ── Summary Cards (P2: at-a-glance top metrics) ── */
-@media (max-width: 560px) {
+@media (max-width: 900px) {
   .mobile-spec-expand-btn { display: inline-block !important; }
 }
 
@@ -1225,7 +1225,7 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
         <span class="compare-controls__label">规格表：</span>
         <button class="btn btn-sm" id="btnExportImage" style="font-size:0.7rem" title="将对比表导出为高清PNG图片">📸 导出图片</button>
         <button class="btn btn-sm" id="btnExportCSV" style="font-size:0.7rem" title="导出对比表为CSV文件（可用Excel打开）">📥 导出CSV</button>
-        <button class="btn btn-sm mobile-spec-expand-btn" id="btnMobileExpandSpecs" style="font-size:0.7rem;display:none" title="在手机上显示全部规格分类">📋 展开全部规格</button>
+        <button class="btn btn-sm mobile-spec-expand-btn" id="btnMobileExpandSpecs" style="font-size:0.7rem" title="在手机上显示全部规格分类">📋 展开全部规格</button>
       </div>
       <div class="compare-controls__row compare-controls__row--tight">
         <span class="compare-controls__label--sm">年份：</span>
@@ -4644,6 +4644,8 @@ class UIRenderer {
       App.state.sortSpec,
       App.state.hiddenCategories ? Array.from(App.state.hiddenCategories).sort() : null,
       App.state.hideSparseChips,
+      App.state.mobileExpandSpecs,
+      window.innerWidth <= 900,
       CHIP_META.length,
       SpecExtractor.countDynamicCells(specExtractions)
     ]);
