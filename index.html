@@ -1422,7 +1422,6 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
       </div>
       <div class="config-bar__row config-bar__row--secondary">
         <select class="chip-sort-select" id="chipSortSelect" title="按规格排序芯片列">
-          <option value="">📊 默认排序</option>
           <option value="fp16">🔥 FP16↓</option>
           <option value="fp8">⚡ FP8↓</option>
           <option value="mem_bw">💾 带宽↓</option>
@@ -6498,7 +6497,7 @@ const App = {
     activePresets: null,       // null = no preset active; Set of preset keys when active (multi-select)
     hiddenCategories: null,    // null = use DEFAULT_HIDDEN_CATEGORIES; Set = user override
     hideSparseChips: true,     // true = hide chips with <25% data (ghost chips)
-    sortSpec: null,            // null = default order; 'fp16'/'mem_bw'/'tdp'/etc = sort chips by that spec desc
+    sortSpec: 'fp16',          // default sort chips by FP16 desc
     detectedChips: [],      // New chips discovered from news text
     customChips: [],        // User-added chips persisted to localStorage
     filterPresets: [],      // Saved filter configurations: [{name, config}, ...]
@@ -8504,7 +8503,7 @@ const App = {
     // Sort selector change handler
     var chipSortSelect = document.getElementById('chipSortSelect');
     if (chipSortSelect) {
-      // Init selected option from state
+      // Init selected option from state (default to fp16 if no state)
       if (App.state.sortSpec) chipSortSelect.value = App.state.sortSpec;
       chipSortSelect.addEventListener('change', function() {
         App.state.sortSpec = this.value || null;
