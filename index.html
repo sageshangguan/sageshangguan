@@ -5,7 +5,7 @@
   描述: 单文件 SPA — 聚合华为 Ascend AI 芯片相关新闻 + 74 颗竞品规格动态对比表
   目标: 桌面 Chrome/Edge/Firefox + iOS Safari 12+ + Android Chrome 7+ + 平板
   JS 兼容: Chrome 54+ / Safari 10+（零 ?. / ?? / .flatMap / } catch (e) {）
-  规格行: 53 行（7 大分组，可折叠）
+  规格行: 56 行（7 大分组，可折叠）
   新闻源: 29 个
   芯片: 74 颗
   新功能: 统一配置栏 · 芯片/规格二级面板（桌面+移动端）· 移动端 UI 对齐桌面 · 移除冗余预设/排序选项
@@ -680,14 +680,15 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
 .chip-preset.active { background: var(--accent-glow); color: var(--accent); border-color: var(--accent) !important; }
 
 /* ── Summary Cards (P2: at-a-glance top metrics) ── */
-@media (max-width: 900px) {
-  .mobile-spec-expand-btn { display: inline-block !important; }
-}
 
-/* Hide mobile expand button on desktop (JS also controls this) */
-@media (min-width: 901px) {
-  .mobile-spec-expand-btn { display: none !important; }
-  #btnDesktopExpandSpecs { display: inline-block !important; }
+/* Expand-all button: visible on all screen sizes, responsive */
+#btnDesktopExpandSpecs { display: inline-block; }
+@media (max-width: 900px) {
+  #btnDesktopExpandSpecs {
+    display: block; width: 100%;
+    padding: 10px 12px; font-size: 0.82rem; min-height: 44px;
+    margin-top: 6px; text-align: left;
+  }
 }
 
 .compare-table-wrap {
@@ -1234,7 +1235,6 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
     float: none;
     margin-left: 4px;
   }
-  .mobile-spec-expand-btn { display: none !important; }
 }
 
 /* Inline chip toggles replaced by picker on all screen sizes */
@@ -1385,7 +1385,6 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
       <span class="compare-controls__label">规格表：</span>
       <button class="btn btn-sm" id="btnExportImage" style="font-size:0.7rem" title="将对比表导出为高清PNG图片">📸 导出图片</button>
       <button class="btn btn-sm" id="btnExportCSV" style="font-size:0.7rem" title="导出对比表为CSV文件（可用Excel打开）">📥 导出CSV</button>
-      <button class="btn btn-sm mobile-spec-expand-btn" id="btnMobileExpandSpecs" style="font-size:0.7rem" title="在手机上显示全部规格分类">📋 展开全部规格</button>
     </div>
   </div>
   <div id="newChipBanner" style="display:none;background:var(--amber);color:var(--color-black);padding:8px 12px;border-radius:6px;margin-bottom:8px;font-size:0.78rem;line-height:1.5"></div>
@@ -1418,7 +1417,7 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
         <button class="picker-trigger" id="specPickerTrigger">
           🔍 筛选规格 <span class="picker-trigger-count" id="specPickerCount"></span>
         </button>
-        <button class="btn btn-sm" id="btnDesktopExpandSpecs" style="font-size:0.7rem;display:none" title="桌面端：展开/收起全部56行规格">📋 展开全部规格 (20/56)</button>
+        <button class="btn btn-sm" id="btnDesktopExpandSpecs" style="font-size:0.7rem" title="展开/收起全部56行规格">📋 展开全部规格 (20/56)</button>
       </div>
     </div>
     <span id="chipToggles" class="chip-toggles-section__list" style="display:none"></span>
@@ -4190,13 +4189,13 @@ class UIRenderer {
       var n = (App.state.visibleChips && App.state.visibleChips.size != null) ? App.state.visibleChips.size : total;
       pCount.textContent = n + '/' + total;
     }
-    // Update desktop expand-all button text
-    var btnDesktopExpand = document.getElementById('btnDesktopExpandSpecs');
-    if (btnDesktopExpand && window.innerWidth > 900) {
-      if (App.state.desktopExpandAllSpecs) {
-        btnDesktopExpand.textContent = '\u{1F4CB} \u{6536}\u{8D77}\u{81F3}\u{6838}\u{5FC3}\u{89C4}\u{683C}'; // 📋 收起至核心规格
+    // Update expand-all button text (both desktop and mobile)
+    var btnExpand = document.getElementById('btnDesktopExpandSpecs');
+    if (btnExpand) {
+      if (App.state.expandAllSpecs) {
+        btnExpand.textContent = '\u{1F4CB} \u{6536}\u{8D77}\u{81F3}\u{6838}\u{5FC3}\u{89C4}\u{683C}'; // 📋 收起至核心规格
       } else {
-        btnDesktopExpand.textContent = '\u{1F4CB} \u{5C55}\u{5F00}\u{5168}\u{90E8}\u{89C4}\u{683C} (20/56)'; // 📋 展开全部规格 (20/56)
+        btnExpand.textContent = '\u{1F4CB} \u{5C55}\u{5F00}\u{5168}\u{90E8}\u{89C4}\u{683C} (20/56)'; // 📋 展开全部规格 (20/56)
       }
     }
     UIRenderer.renderNewChipBanner(App.state.detectedChips);
@@ -4851,7 +4850,7 @@ class UIRenderer {
       App.state.hiddenCategories ? Array.from(App.state.hiddenCategories).sort() : null,
       App.state.hideSparseChips,
       App.state.visibleSpecs ? Array.from(App.state.visibleSpecs).sort() : null,
-      App.state.desktopExpandAllSpecs,
+      App.state.expandAllSpecs,
       window.innerWidth <= 900,
       CHIP_META.length,
       SpecExtractor.countDynamicCells(specExtractions)
@@ -4964,36 +4963,18 @@ class UIRenderer {
 
     // Group specs by category
     var cats = SPEC_CATEGORIES;
-    // ── Compute visible spec keys (mobile: 5 core categories; desktop: 20 core specs) ──
+    // ── Compute visible spec keys (unified: 20 core specs by default, expand to all 56) ──
     var visibleSpecKeys = null;
-    if (window.innerWidth <= 900) {
-      // Mobile/tablet filtering
-      if (App.state.visibleSpecs !== null) {
-        visibleSpecKeys = App.state.visibleSpecs;  // User customized via picker
-      } else {
-        // Default: specs from 5 core categories (mobileDefault !== false)
-        visibleSpecKeys = new Set();
-        for (var ci = 0; ci < SPEC_CATEGORIES.length; ci++) {
-          if (SPEC_CATEGORIES[ci].mobileDefault !== false) {
-            for (var ki = 0; ki < SPEC_CATEGORIES[ci].keys.length; ki++) {
-              visibleSpecKeys.add(SPEC_CATEGORIES[ci].keys[ki]);
-            }
-          }
-        }
+    if (App.state.visibleSpecs !== null) {
+      visibleSpecKeys = App.state.visibleSpecs;  // User customized via picker
+    } else if (!App.state.expandAllSpecs) {
+      // Default: 20 core specs (DESKTOP_CORE_SPECS)
+      visibleSpecKeys = new Set();
+      for (var dsi = 0; dsi < DESKTOP_CORE_SPECS.length; dsi++) {
+        visibleSpecKeys.add(DESKTOP_CORE_SPECS[dsi]);
       }
-    } else {
-      // Desktop filtering
-      if (App.state.visibleSpecs !== null) {
-        visibleSpecKeys = App.state.visibleSpecs;  // User customized via picker
-      } else if (!App.state.desktopExpandAllSpecs) {
-        // Default: 20 core specs (DESKTOP_CORE_SPECS)
-        visibleSpecKeys = new Set();
-        for (var dsi = 0; dsi < DESKTOP_CORE_SPECS.length; dsi++) {
-          visibleSpecKeys.add(DESKTOP_CORE_SPECS[dsi]);
-        }
-      }
-      // else: expanded → visibleSpecKeys stays null (show all 56)
     }
+    // else: expanded → visibleSpecKeys stays null (show all 56)
     var collapsedCats = App.state.collapsedCategories;
     if (collapsedCats === null) collapsedCats = new Set();
     for (var gi = 0; gi < cats.length; gi++) {
@@ -6503,9 +6484,8 @@ const App = {
 
     selectedYears: null,    // null = all years; Set of year numbers (e.g., 2025, 2026) when filtered
     collapsedCategories: null, // null = all expanded; Set of category ids that are collapsed
-    mobileExpandSpecs: false,   // mobile-only: true = show all spec categories (not just 5 core) — deprecated, use visibleSpecs on mobile
-    visibleSpecs: null,        // mobile-only: null=default(5 core) | Set=user-customized visible spec keys
-    desktopExpandAllSpecs: false, // desktop: false=show 20 core specs | true=show all 56
+    visibleSpecs: null,        // null=default(20 core) | Set=user-customized visible spec keys
+    expandAllSpecs: false,     // false=show 20 core specs (DESKTOP_CORE_SPECS) | true=show all 56
     _collapsedVendors: null,   // null = all collapsed; {vendorName: true} when collapsed (UI state, not persisted)
     activePresets: null,       // null = no preset active; Set of preset keys when active (multi-select)
     hiddenCategories: null,    // null = use DEFAULT_HIDDEN_CATEGORIES; Set = user override
@@ -8224,15 +8204,11 @@ const App = {
     var specPickerTrigger = document.getElementById('specPickerTrigger');
     var _specPickerCat = null; // currently selected category in picker
 
-    // Helper: return Set of default visible spec keys (5 core categories)
+    // Helper: return Set of default visible spec keys (20 DESKTOP_CORE_SPECS)
     function _getDefaultSpecKeys() {
       var keys = new Set();
-      for (var ci = 0; ci < SPEC_CATEGORIES.length; ci++) {
-        if (SPEC_CATEGORIES[ci].mobileDefault !== false) {
-          for (var ki = 0; ki < SPEC_CATEGORIES[ci].keys.length; ki++) {
-            keys.add(SPEC_CATEGORIES[ci].keys[ki]);
-          }
-        }
+      for (var di = 0; di < DESKTOP_CORE_SPECS.length; di++) {
+        keys.add(DESKTOP_CORE_SPECS[di]);
       }
       return keys;
     }
@@ -8242,7 +8218,8 @@ const App = {
       if (App.state.visibleSpecs !== null) {
         return App.state.visibleSpecs.has(specKey);
       }
-      // Default: check core categories
+      if (App.state.expandAllSpecs) return true; // all expanded
+      // Default: check 20 core specs
       var defKeys = _getDefaultSpecKeys();
       return defKeys.has(specKey);
     }
@@ -8587,21 +8564,11 @@ const App = {
       UIRenderer.renderComparisonTable(App.state.specExtractions);
     });
 
-    // Mobile spec expand/collapse toggle (V0.14)
-    var btnMobileExpand = document.getElementById('btnMobileExpandSpecs');
-    if (btnMobileExpand) {
-      btnMobileExpand.addEventListener('click', function () {
-        App.state.mobileExpandSpecs = !App.state.mobileExpandSpecs;
-        btnMobileExpand.textContent = App.state.mobileExpandSpecs ? '📋 收起全部规格' : '📋 展开全部规格';
-        UIRenderer.renderComparisonTable(App.state.specExtractions);
-      });
-    }
-
-    // Desktop expand-all-specs toggle
-    var btnDesktopExpand = document.getElementById('btnDesktopExpandSpecs');
-    if (btnDesktopExpand) {
-      btnDesktopExpand.addEventListener('click', function () {
-        App.state.desktopExpandAllSpecs = !App.state.desktopExpandAllSpecs;
+    // Expand-all-specs toggle (unified — both desktop and mobile)
+    var btnExpand = document.getElementById('btnDesktopExpandSpecs');
+    if (btnExpand) {
+      btnExpand.addEventListener('click', function () {
+        App.state.expandAllSpecs = !App.state.expandAllSpecs;
         App.state.visibleSpecs = null; // clear picker customization when toggling core/all
         UIRenderer._compareCacheKey = null; // force re-render
         UIRenderer.renderComparisonTable(App.state.specExtractions);
