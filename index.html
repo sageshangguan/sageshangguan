@@ -1086,6 +1086,113 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
   .header-search { max-width: 90px; }
   .news-card-meta { gap: 6px; font-size: 0.7rem; }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Mobile Chip Picker — bottom sheet overlay (two-level)
+   ══════════════════════════════════════════════════════════════ */
+.chip-picker-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.55);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  display: flex; align-items: flex-end;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s;
+}
+.chip-picker-overlay.open { opacity: 1; pointer-events: auto; }
+.chip-picker-sheet {
+  width: 100%; max-height: 82vh;
+  background: var(--bg-card);
+  border-radius: 18px 18px 0 0;
+  display: flex; flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  overflow: hidden;
+}
+.chip-picker-overlay.open .chip-picker-sheet { transform: translateY(0); }
+.chip-picker-handle {
+  width: 36px; height: 4px; background: var(--border-light);
+  border-radius: 2px; margin: 10px auto 6px; flex-shrink: 0;
+}
+.chip-picker-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 4px 16px 8px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.chip-picker-title { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); }
+.chip-picker-done {
+  font-size: 0.82rem; font-weight: 600; color: var(--accent);
+  background: none; border: none; padding: 6px 10px; cursor: pointer;
+  touch-action: manipulation; min-height: 36px;
+}
+.chip-picker-presets {
+  display: flex; gap: 6px; padding: 8px 16px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0; flex-wrap: wrap;
+}
+.chip-picker-presets .chip-preset { font-size: 0.75rem; padding: 6px 12px; min-height: 36px; }
+.chip-picker-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+/* Vendor list */
+.chip-picker-vendor-item {
+  display: flex; align-items: center; padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer; touch-action: manipulation;
+  min-height: 48px; font-size: 0.85rem; color: var(--text-primary);
+  transition: background 0.12s;
+}
+.chip-picker-vendor-item:active { background: var(--bg-card-hover); }
+.chip-picker-vendor-dot {
+  width: 8px; height: 8px; border-radius: 50%; margin-right: 10px; flex-shrink: 0;
+}
+.chip-picker-vendor-name { flex: 1; font-weight: 600; }
+.chip-picker-vendor-count { font-size: 0.7rem; color: var(--text-muted); margin-right: 4px; }
+.chip-picker-vendor-arrow { font-size: 0.7rem; color: var(--text-muted); }
+/* Chip grid (inside a vendor) */
+.chip-picker-chip-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+  font-size: 0.82rem; font-weight: 600; color: var(--text-primary);
+}
+.chip-picker-back {
+  font-size: 0.85rem; color: var(--accent); background: none; border: none;
+  padding: 4px 8px; cursor: pointer; touch-action: manipulation;
+  min-height: 36px; min-width: 44px;
+}
+.chip-picker-chip-grid {
+  display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 16px;
+}
+.chip-picker-chip-btn {
+  padding: 9px 14px; font-size: 0.78rem; min-height: 40px; min-width: 44px;
+  border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg-secondary); color: var(--text-secondary);
+  cursor: pointer; touch-action: manipulation;
+  transition: background 0.12s, border-color 0.12s;
+  white-space: nowrap;
+}
+.chip-picker-chip-btn:active { background: var(--bg-card-hover); }
+.chip-picker-chip-btn.active {
+  background: var(--accent-glow); color: var(--accent);
+  border-color: var(--accent);
+}
+/* Mobile trigger button */
+.chip-picker-trigger {
+  display: none;
+  width: 100%; padding: 10px 12px; font-size: 0.82rem; font-weight: 600;
+  background: var(--bg-card); border: 1px solid var(--accent);
+  border-radius: 8px; color: var(--accent); cursor: pointer;
+  touch-action: manipulation; min-height: 44px;
+  text-align: left;
+}
+.chip-picker-trigger .picker-trigger-count {
+  float: right; font-weight: 400; font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+/* Hide inline toggles on mobile, show picker trigger instead */
+@media (max-width: 900px) {
+  .chip-toggles-section__list { display: none; }
+  .chip-picker-trigger { display: block; }
+  .chip-toggles-section__header { align-items: flex-start; }
+}
 </style>
 </head>
 <body>
@@ -1140,6 +1247,9 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
       </span>
     </div>
     <span id="chipToggles" class="chip-toggles-section__list"></span>
+    <button class="chip-picker-trigger" id="chipPickerTrigger">
+      🔍 选择芯片 <span class="picker-trigger-count" id="chipPickerCount"></span>
+    </button>
   </div>
   <div class="compare-table-wrap">
     <table class="compare-table" id="compareTable"></table>
@@ -1168,6 +1278,24 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
     <div class="deploy-note">
       仅列出公开确认信息的厂商。"未公开"=无公开客户/部署资料；"未发布"=芯片尚未量产。<br>
       数据截至 2026-07，来源：公开新闻/财报/行业报告。如有遗漏欢迎补正。
+    </div>
+  </div>
+
+  <!-- ── Mobile Chip Picker overlay ── -->
+  <div class="chip-picker-overlay" id="chipPickerOverlay">
+    <div class="chip-picker-sheet" id="chipPickerSheet">
+      <div class="chip-picker-handle"></div>
+      <div class="chip-picker-head">
+        <span class="chip-picker-title" id="chipPickerTitle">选择芯片</span>
+        <button class="chip-picker-done" id="chipPickerDone">完成</button>
+      </div>
+      <div class="chip-picker-presets">
+        <button class="btn btn-sm chip-preset" data-preset="flagship">🏆 旗舰</button>
+        <button class="btn btn-sm chip-preset" data-preset="production">✅ 已量产</button>
+        <button class="btn btn-sm" id="chipPickerSelectAll" style="font-size:0.75rem;padding:6px 12px;min-height:36px">全部</button>
+        <button class="btn btn-sm" id="chipPickerSelectNone" style="font-size:0.75rem;padding:6px 12px;min-height:36px">清空</button>
+      </div>
+      <div class="chip-picker-body" id="chipPickerBody"></div>
     </div>
   </div>
 
@@ -4209,6 +4337,13 @@ class UIRenderer {
       html += '</span>';
     }
     container.innerHTML = html;
+    // Update mobile picker trigger count badge
+    var pCount = document.getElementById('chipPickerCount');
+    if (pCount) {
+      var total = CHIP_META.length;
+      var n = (App.state.visibleChips && App.state.visibleChips.size != null) ? App.state.visibleChips.size : total;
+      pCount.textContent = n + '/' + total;
+    }
   }
 
   /**
@@ -7577,6 +7712,203 @@ const App = {
       }
       UIRenderer._refreshCompareUI();
     });
+
+    // ═══════════════════════════════════════════════════════════
+    // Mobile Chip Picker — bottom sheet overlay (two-level)
+    // ═══════════════════════════════════════════════════════════
+    var pickerOverlay = document.getElementById('chipPickerOverlay');
+    var pickerBody = document.getElementById('chipPickerBody');
+    var pickerTitle = document.getElementById('chipPickerTitle');
+    var pickerCount = document.getElementById('chipPickerCount');
+    var pickerTrigger = document.getElementById('chipPickerTrigger');
+    var _pickerVendor = null; // currently selected vendor in picker
+
+    // Update trigger button count badge
+    function _updatePickerCount() {
+      if (!pickerCount) return;
+      var total = CHIP_META.length;
+      var n = App.state.visibleChips ? App.state.visibleChips.size : total;
+      pickerCount.textContent = n + '/' + total;
+    }
+
+    // Render vendor list in picker
+    function _renderPickerVendors() {
+      _pickerVendor = null;
+      pickerTitle.textContent = '选择芯片';
+      // Build vendor→chips map
+      var vMap = {};
+      for (var pi = 0; pi < CHIP_META.length; pi++) {
+        var c = CHIP_META[pi];
+        if (!vMap[c.vendor]) vMap[c.vendor] = [];
+        vMap[c.vendor].push(c);
+      }
+      var vendors = Object.keys(vMap);
+      // Sort by max FP16 (reuse existing logic — simple alphabetical for now)
+      vendors.sort();
+      var html = '';
+      for (var vi = 0; vi < vendors.length; vi++) {
+        var v = vendors[vi];
+        var chips = vMap[v];
+        // Count visible chips for this vendor
+        var visN = 0;
+        for (var ci = 0; ci < chips.length; ci++) {
+          if (UIRenderer._isChipVisible(chips[ci].id)) visN++;
+        }
+        html += '<div class="chip-picker-vendor-item" data-vendor="' + v.replace(/"/g, '&quot;') + '">' +
+          '<span class="chip-picker-vendor-dot" style="background:' + chips[0].color + '"></span>' +
+          '<span class="chip-picker-vendor-name">' + v + '</span>' +
+          '<span class="chip-picker-vendor-count">' + visN + '/' + chips.length + '</span>' +
+          '<span class="chip-picker-vendor-arrow">▶</span>' +
+          '</div>';
+      }
+      pickerBody.innerHTML = html;
+      // Bind vendor tap
+      var items = pickerBody.querySelectorAll('.chip-picker-vendor-item');
+      for (var ii = 0; ii < items.length; ii++) {
+        items[ii].addEventListener('click', function(e) {
+          var vendor = this.getAttribute('data-vendor');
+          _renderPickerChips(vendor);
+        });
+      }
+    }
+
+    // Render chip list for a vendor in picker
+    function _renderPickerChips(vendor) {
+      _pickerVendor = vendor;
+      pickerTitle.textContent = vendor;
+      var chips = [];
+      for (var pi = 0; pi < CHIP_META.length; pi++) {
+        if (CHIP_META[pi].vendor === vendor) chips.push(CHIP_META[pi]);
+      }
+      var html = '<div class="chip-picker-chip-head">' +
+        '<button class="chip-picker-back" id="chipPickerBack">← 返回</button>' +
+        '<span>' + vendor + ' <span style="font-weight:400;color:var(--text-muted);font-size:0.7rem">' + chips.length + '颗</span></span>' +
+        '</div>';
+      html += '<div class="chip-picker-chip-grid">';
+      for (var ci = 0; ci < chips.length; ci++) {
+        var chip = chips[ci];
+        var isOn = UIRenderer._isChipVisible(chip.id);
+        html += '<button class="chip-picker-chip-btn' + (isOn ? ' active' : '') +
+          '" data-chip="' + chip.id + '" style="border-left:3px solid ' + chip.color + '">' +
+          chip.name + '</button>';
+      }
+      html += '</div>';
+      pickerBody.innerHTML = html;
+      // Bind back button
+      var backBtn = document.getElementById('chipPickerBack');
+      if (backBtn) {
+        backBtn.addEventListener('click', function() {
+          _renderPickerVendors();
+        });
+      }
+      // Bind chip toggle
+      var chipBtns = pickerBody.querySelectorAll('.chip-picker-chip-btn');
+      for (var cbi = 0; cbi < chipBtns.length; cbi++) {
+        chipBtns[cbi].addEventListener('click', function(e) {
+          e.stopPropagation();
+          var chipId = this.getAttribute('data-chip');
+          if (!App.state.visibleChips) {
+            // All visible → init set with all, then remove this one
+            App.state.visibleChips = new Set();
+            for (var ai = 0; ai < CHIP_META.length; ai++) {
+              App.state.visibleChips.add(CHIP_META[ai].id);
+            }
+            App.state.visibleChips.delete(chipId);
+          } else {
+            if (App.state.visibleChips.has(chipId)) {
+              App.state.visibleChips.delete(chipId);
+            } else {
+              App.state.visibleChips.add(chipId);
+            }
+            // Revert to null if all selected
+            if (App.state.visibleChips.size === 0 || App.state.visibleChips.size === CHIP_META.length) {
+              App.state.visibleChips = null;
+            }
+          }
+          App.state.activePresets = null;
+          App._updatePresetButtonStates();
+          UIRenderer._refreshCompareUI();
+          _updatePickerCount();
+          // Re-render chip list to reflect toggled state
+          _renderPickerChips(vendor);
+        });
+      }
+    }
+
+    // Open picker
+    function _openPicker() {
+      _updatePickerCount();
+      _renderPickerVendors();
+      pickerOverlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Close picker
+    function _closePicker() {
+      pickerOverlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    // Trigger button
+    if (pickerTrigger) {
+      pickerTrigger.addEventListener('click', _openPicker);
+    }
+
+    // Close on overlay tap (outside sheet)
+    if (pickerOverlay) {
+      pickerOverlay.addEventListener('click', function(e) {
+        if (e.target === pickerOverlay) _closePicker();
+      });
+    }
+
+    // Done button
+    var pickerDone = document.getElementById('chipPickerDone');
+    if (pickerDone) {
+      pickerDone.addEventListener('click', _closePicker);
+    }
+
+    // Select All button
+    var pickerSelectAll = document.getElementById('chipPickerSelectAll');
+    if (pickerSelectAll) {
+      pickerSelectAll.addEventListener('click', function() {
+        App.state.visibleChips = null;
+        App.state.activePresets = null;
+        App._updatePresetButtonStates();
+        UIRenderer._refreshCompareUI();
+        _updatePickerCount();
+        if (_pickerVendor) _renderPickerChips(_pickerVendor);
+        else _renderPickerVendors();
+      });
+    }
+
+    // Select None button
+    var pickerSelectNone = document.getElementById('chipPickerSelectNone');
+    if (pickerSelectNone) {
+      pickerSelectNone.addEventListener('click', function() {
+        App.state.visibleChips = new Set();
+        App.state.activePresets = null;
+        App._updatePresetButtonStates();
+        UIRenderer._refreshCompareUI();
+        _updatePickerCount();
+        if (_pickerVendor) _renderPickerChips(_pickerVendor);
+        else _renderPickerVendors();
+      });
+    }
+
+    // Preset buttons in picker
+    var pickerPresets = document.querySelectorAll('#chipPickerOverlay .chip-preset');
+    for (var ppi = 0; ppi < pickerPresets.length; ppi++) {
+      pickerPresets[ppi].addEventListener('click', function() {
+        var preset = this.getAttribute('data-preset');
+        App._applyChipPreset(preset);
+        _updatePickerCount();
+        if (_pickerVendor) _renderPickerChips(_pickerVendor);
+        else _renderPickerVendors();
+      });
+    }
+
+    // Update picker count on initial load
+    _updatePickerCount();
 
     // Sort selector change handler (delegated on chipToggles)
     document.getElementById('chipToggles').addEventListener('change', function(e) {
