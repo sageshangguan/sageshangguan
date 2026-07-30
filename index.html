@@ -1085,27 +1085,21 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
   .compare-panel { padding: 0 10px; }
   /* Scroll hint for comparison table on mobile — bottom-right badge, auto-fades */
   .compare-table-wrap { -webkit-overflow-scrolling: touch; position: relative; max-height: 55vh; overflow-y: auto; }
-  /* ── Mobile table: vertical chip headers + tight cells ── */
-  .compare-table { font-size: 0.62rem; }
+  /* ── Mobile table: wrap text, narrow columns ── */
+  .compare-table { font-size: 0.6rem; }
   .compare-table thead th,
-  .compare-table tbody td { padding: 3px 4px; }
-  /* First column: narrower, ellipsis overflow */
+  .compare-table tbody td { padding: 3px 5px; white-space: normal; overflow-wrap: break-word; word-wrap: break-word; }
+  /* First column: narrow with wrapping */
   .compare-table thead th:first-child,
-  .compare-table tbody td:first-child { max-width: 54px; min-width: 40px; overflow: hidden; text-overflow: ellipsis; font-size: 0.58rem; padding: 3px 4px; }
-  .compare-table .spec-cat-header .cat-label-cell { max-width: 54px; min-width: 40px; font-size: 0.58rem; padding: 3px 4px; }
-  /* Vertical chip name headers — the key optimization */
+  .compare-table tbody td:first-child { max-width: 58px; min-width: 38px; font-size: 0.55rem; padding: 3px 4px; white-space: normal; overflow-wrap: break-word; word-wrap: break-word; overflow: hidden; }
+  .compare-table .spec-cat-header .cat-label-cell { max-width: 58px; min-width: 38px; font-size: 0.55rem; padding: 3px 4px; }
+  /* Chip headers: horizontal, allow wrap (e.g. "Ascend\n950PR") */
   .compare-table thead th.chip-col {
-    writing-mode: vertical-rl;
-    -webkit-writing-mode: vertical-rl;
-    padding: 3px 2px;
-    font-size: 0.52rem;
-    letter-spacing: 0.01em;
-    max-height: 68px;
-    overflow: hidden;
-    vertical-align: bottom;
+    white-space: normal; overflow-wrap: break-word; word-wrap: break-word;
+    font-size: 0.52rem; padding: 2px 4px;
   }
-  /* Chip data columns: tight, no minimum */
-  .compare-table .chip-col { min-width: 34px; }
+  /* Chip data columns: tight, with wrapping */
+  .compare-table .chip-col { min-width: 32px; max-width: 65px; }
   .compare-table .cat-count, .compare-table .spec-cat-header .cat-info { display: none; }
   .compare-table-wrap::after {
     content: '← 滑动查看 →';
