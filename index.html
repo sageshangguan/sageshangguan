@@ -736,7 +736,7 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
 }
 
 /* Hide mobile expand button on desktop (JS also controls this) */
-@media (min-width: 561px) {
+@media (min-width: 901px) {
   .mobile-spec-expand-btn { display: none !important; }
 }
 
@@ -1049,6 +1049,12 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
   .sidebar-section { flex: 1; min-width: 140px; }
   .stats-bar { grid-template-columns: repeat(2, 1fr); }
   .header-search { max-width: 200px; }
+  /* ── Tablet table: moderately constrain first column ── */
+  .compare-table thead th:first-child,
+  .compare-table tbody td:first-child { max-width: 100px; min-width: 60px; font-size: 0.7rem; }
+  .compare-table .spec-cat-header .cat-label-cell { max-width: 100px; min-width: 60px; font-size: 0.7rem; }
+  .compare-table .spec-cat-header .cat-count { font-size: 0.55rem; }
+  .compare-table .spec-cat-header .cat-info { font-size: 0.65rem; }
 }
 
 @media (max-width: 560px) {
@@ -1079,6 +1085,15 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
   .compare-panel { padding: 0 10px; }
   /* Scroll hint for comparison table on mobile — bottom-right badge, auto-fades */
   .compare-table-wrap { -webkit-overflow-scrolling: touch; position: relative; max-height: 55vh; overflow-y: auto; }
+  /* ── Mobile table: shrink first column + cells ── */
+  .compare-table { font-size: 0.68rem; }
+  .compare-table thead th,
+  .compare-table tbody td { padding: 5px 7px; }
+  .compare-table thead th:first-child,
+  .compare-table tbody td:first-child { max-width: 72px; min-width: 50px; overflow: hidden; text-overflow: ellipsis; font-size: 0.65rem; padding: 5px 6px; }
+  .compare-table .spec-cat-header .cat-label-cell { max-width: 72px; min-width: 50px; font-size: 0.65rem; padding: 5px 6px; }
+  .compare-table .chip-col { min-width: 78px; }
+  .compare-table .cat-count, .compare-table .spec-cat-header .cat-info { display: none; }
   .compare-table-wrap::after {
     content: '← 滑动查看 →';
     position: absolute; right: 4px; bottom: 4px; z-index: 1;
@@ -4734,8 +4749,8 @@ class UIRenderer {
 
     // Group specs by category
     var cats = SPEC_CATEGORIES;
-    // ── Mobile compact mode: default to 5 core categories (V0.14) ──
-    if (window.innerWidth <= 560 && !App.state.mobileExpandSpecs) {
+    // ── Mobile/tablet compact mode: default to 5 core categories ──
+    if (window.innerWidth <= 900 && !App.state.mobileExpandSpecs) {
       cats = [];
       for (var ci = 0; ci < SPEC_CATEGORIES.length; ci++) {
         if (SPEC_CATEGORIES[ci].mobileDefault !== false) cats.push(SPEC_CATEGORIES[ci]);
