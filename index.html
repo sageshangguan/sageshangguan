@@ -1146,6 +1146,16 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
 .chip-picker-vendor-name { flex: 1; font-weight: 600; }
 .chip-picker-vendor-count { font-size: 0.7rem; color: var(--text-muted); margin-right: 4px; }
 .chip-picker-vendor-arrow { font-size: 0.7rem; color: var(--text-muted); }
+/* Quick-toggle all chips for a vendor (level 1) */
+.chip-picker-vendor-toggle {
+  width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border);
+  background: var(--bg-secondary); color: var(--text-muted);
+  font-size: 0.65rem; cursor: pointer; touch-action: manipulation;
+  display: flex; align-items: center; justify-content: center;
+  margin-right: 8px; flex-shrink: 0; transition: all 0.15s;
+}
+.chip-picker-vendor-toggle.all-on { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+.chip-picker-vendor-toggle.some-on { background: var(--amber-ghost, rgba(255,152,0,0.15)); border-color: var(--amber); color: var(--amber); }
 /* Chip grid (inside a vendor) */
 .chip-picker-chip-head {
   display: flex; align-items: center; gap: 8px;
@@ -1249,6 +1259,16 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
 .spec-picker-cat-name { flex: 1; font-weight: 600; }
 .spec-picker-cat-count { font-size: 0.7rem; color: var(--text-muted); margin-right: 4px; }
 .spec-picker-cat-arrow { font-size: 0.7rem; color: var(--text-muted); }
+/* Quick-toggle all specs for a category (level 1) */
+.spec-picker-cat-toggle {
+  width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border);
+  background: var(--bg-secondary); color: var(--text-muted);
+  font-size: 0.65rem; cursor: pointer; touch-action: manipulation;
+  display: flex; align-items: center; justify-content: center;
+  margin-right: 8px; flex-shrink: 0; transition: all 0.15s;
+}
+.spec-picker-cat-toggle.all-on { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+.spec-picker-cat-toggle.some-on { background: var(--amber-ghost, rgba(255,152,0,0.15)); border-color: var(--amber); color: var(--amber); }
 /* Spec grid (level 2, inside a category) */
 .spec-picker-spec-head {
   display: flex; align-items: center; gap: 8px;
@@ -1328,9 +1348,6 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
         <button class="btn btn-sm" id="btnExportImage" style="font-size:0.7rem" title="将对比表导出为高清PNG图片">📸 导出图片</button>
         <button class="btn btn-sm" id="btnExportCSV" style="font-size:0.7rem" title="导出对比表为CSV文件（可用Excel打开）">📥 导出CSV</button>
         <button class="btn btn-sm mobile-spec-expand-btn" id="btnMobileExpandSpecs" style="font-size:0.7rem" title="在手机上显示全部规格分类">📋 展开全部规格</button>
-        <button class="btn btn-sm spec-picker-trigger" id="specPickerTrigger">
-          🔍 筛选规格 <span class="picker-trigger-count" id="specPickerCount"></span>
-        </button>
       </div>
       <div class="compare-controls__row compare-controls__row--tight">
         <span class="compare-controls__label--sm">年份：</span>
@@ -1354,6 +1371,9 @@ input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
     <span id="chipToggles" class="chip-toggles-section__list"></span>
     <button class="chip-picker-trigger" id="chipPickerTrigger">
       🔍 选择芯片 <span class="picker-trigger-count" id="chipPickerCount"></span>
+    </button>
+    <button class="chip-picker-trigger spec-picker-trigger" id="specPickerTrigger">
+      🔍 筛选规格 <span class="picker-trigger-count" id="specPickerCount"></span>
     </button>
   </div>
   <div class="compare-table-wrap">
@@ -7907,20 +7927,66 @@ const App = {
         for (var ci = 0; ci < chips.length; ci++) {
           if (UIRenderer._isChipVisible(chips[ci].id)) visN++;
         }
+        var toggleCls = visN === chips.length ? 'all-on' : (visN > 0 ? 'some-on' : '');
+        var toggleIcon = visN === chips.length ? '✓' : (visN > 0 ? '◐' : '+');
         html += '<div class="chip-picker-vendor-item" data-vendor="' + v.replace(/"/g, '&quot;') + '">' +
           '<span class="chip-picker-vendor-dot" style="background:' + chips[0].color + '"></span>' +
           '<span class="chip-picker-vendor-name">' + v + '</span>' +
           '<span class="chip-picker-vendor-count">' + visN + '/' + chips.length + '</span>' +
+          '<span class="chip-picker-vendor-toggle ' + toggleCls + '" data-toggle-vendor="' + v.replace(/"/g, '&quot;') + '">' + toggleIcon + '</span>' +
           '<span class="chip-picker-vendor-arrow">▶</span>' +
           '</div>';
       }
       pickerBody.innerHTML = html;
-      // Bind vendor tap
+      // Bind vendor tap (drill into chip list)
       var items = pickerBody.querySelectorAll('.chip-picker-vendor-item');
       for (var ii = 0; ii < items.length; ii++) {
         items[ii].addEventListener('click', function(e) {
+          // Don't drill in if the toggle button was clicked
+          if (e.target.classList.contains('chip-picker-vendor-toggle')) return;
           var vendor = this.getAttribute('data-vendor');
           _renderPickerChips(vendor);
+        });
+      }
+      // Bind toggle-all buttons
+      var toggles = pickerBody.querySelectorAll('.chip-picker-vendor-toggle');
+      for (var ti = 0; ti < toggles.length; ti++) {
+        toggles[ti].addEventListener('click', function(e) {
+          e.stopPropagation();
+          var vendor = this.getAttribute('data-toggle-vendor');
+          var vChips = vMap[vendor];
+          if (!vChips) return;
+          // Count current visible
+          var visC = 0;
+          for (var vci = 0; vci < vChips.length; vci++) {
+            if (UIRenderer._isChipVisible(vChips[vci].id)) visC++;
+          }
+          // Determine action: if all visible → hide all; otherwise → show all
+          var makeVisible = visC < vChips.length;
+          // Init visibleChips if null
+          if (App.state.visibleChips === null) {
+            if (makeVisible) return; // all already visible
+            App.state.visibleChips = new Set();
+            for (var ai = 0; ai < CHIP_META.length; ai++) {
+              App.state.visibleChips.add(CHIP_META[ai].id);
+            }
+          }
+          for (var vci2 = 0; vci2 < vChips.length; vci2++) {
+            if (makeVisible) {
+              App.state.visibleChips.add(vChips[vci2].id);
+            } else {
+              App.state.visibleChips.delete(vChips[vci2].id);
+            }
+          }
+          // Revert to null if all selected or none selected
+          if (App.state.visibleChips.size === 0 || App.state.visibleChips.size === CHIP_META.length) {
+            App.state.visibleChips = null;
+          }
+          App.state.activePresets = null;
+          App._updatePresetButtonStates();
+          UIRenderer._refreshCompareUI();
+          _updatePickerCount();
+          _renderPickerVendors(); // re-render vendor list to update toggle icons
         });
       }
     }
@@ -8141,23 +8207,80 @@ const App = {
       for (var ci = 0; ci < SPEC_CATEGORIES.length; ci++) {
         var cat = SPEC_CATEGORIES[ci];
         var visN = _countVisibleInCat(cat);
+        var totalN = cat.keys.length;
+        var toggleCls = visN === totalN ? 'all-on' : (visN > 0 ? 'some-on' : '');
+        var toggleIcon = visN === totalN ? '✓' : (visN > 0 ? '◐' : '+');
         // Extract emoji from label (first 2 chars are emoji + space)
         var emoji = cat.label.substring(0, 2);
         var name = cat.label.substring(2).trim();
         html += '<div class="spec-picker-cat-item" data-cat="' + cat.id + '">' +
           '<span class="spec-picker-cat-emoji">' + emoji + '</span>' +
           '<span class="spec-picker-cat-name">' + name + '</span>' +
-          '<span class="spec-picker-cat-count">' + visN + '/' + cat.keys.length + '</span>' +
+          '<span class="spec-picker-cat-count">' + visN + '/' + totalN + '</span>' +
+          '<span class="spec-picker-cat-toggle ' + toggleCls + '" data-toggle-cat="' + cat.id + '">' + toggleIcon + '</span>' +
           '<span class="spec-picker-cat-arrow">▶</span>' +
           '</div>';
       }
       specPickerBody.innerHTML = html;
-      // Bind category tap
+      // Bind category tap (drill into spec list)
       var items = specPickerBody.querySelectorAll('.spec-picker-cat-item');
       for (var ii = 0; ii < items.length; ii++) {
         items[ii].addEventListener('click', function(e) {
+          // Don't drill in if the toggle button was clicked
+          if (e.target.classList.contains('spec-picker-cat-toggle')) return;
           var catId = this.getAttribute('data-cat');
           _renderSpecPickerSpecs(catId);
+        });
+      }
+      // Bind toggle-all buttons for categories
+      var catToggles = specPickerBody.querySelectorAll('.spec-picker-cat-toggle');
+      for (var cti = 0; cti < catToggles.length; cti++) {
+        catToggles[cti].addEventListener('click', function(e) {
+          e.stopPropagation();
+          var catId = this.getAttribute('data-toggle-cat');
+          // Find the category
+          var cat = null;
+          for (var sci = 0; sci < SPEC_CATEGORIES.length; sci++) {
+            if (SPEC_CATEGORIES[sci].id === catId) { cat = SPEC_CATEGORIES[sci]; break; }
+          }
+          if (!cat) return;
+          // Count current visible
+          var visC = _countVisibleInCat(cat);
+          var makeVisible = visC < cat.keys.length;
+          // Init visibleSpecs from current state if null
+          if (App.state.visibleSpecs === null) {
+            if (makeVisible) return; // already all visible (null = all)
+            App.state.visibleSpecs = _getDefaultSpecKeys();
+          }
+          for (var ski = 0; ski < cat.keys.length; ski++) {
+            if (makeVisible) {
+              App.state.visibleSpecs.add(cat.keys[ski]);
+            } else {
+              App.state.visibleSpecs.delete(cat.keys[ski]);
+            }
+          }
+          // Revert to null if matches default core set or all specs
+          var defKeys = _getDefaultSpecKeys();
+          var matchesDefault = true;
+          if (App.state.visibleSpecs.size !== defKeys.size) {
+            matchesDefault = false;
+          } else {
+            var dit = App.state.visibleSpecs.values();
+            var ditem = dit.next();
+            while (!ditem.done) {
+              if (!defKeys.has(ditem.value)) { matchesDefault = false; break; }
+              ditem = dit.next();
+            }
+          }
+          if (matchesDefault) App.state.visibleSpecs = null;
+          // Check if all specs (from all categories) are selected → revert to null
+          var allSpecsTotal = _totalSpecs();
+          if (App.state.visibleSpecs !== null && App.state.visibleSpecs.size >= allSpecsTotal) {
+            App.state.visibleSpecs = null;
+          }
+          UIRenderer.renderComparisonTable(App.state.specExtractions);
+          _updateSpecPickerCount();
+          _renderSpecPickerCategories(); // re-render to update toggle icons
         });
       }
     }
